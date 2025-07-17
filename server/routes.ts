@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { convertImageToIcon } from "./services/iconConverter";
 import IconRefinementService from "./services/iconRefinement";
-import { insertIconConversionSchema } from "@shared/schema";
+import { generateMultiVariantIcons } from "./services/multiVariantIconGenerator";
+import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
 import multer from "multer";
 import { z } from "zod";
 
@@ -22,7 +23,102 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize refinement service
   const refinementService = new IconRefinementService();
-  // Convert image to icon
+  
+  // Multi-variant icon generation
+  app.post('/api/generate-multi-variant-icons', upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided' });
+      }
+
+      const base64Image = req.file.buffer.toString('base64');
+      const multiVariantResult = await generateMultiVariantIcons(req.file.originalname, base64Image);
+      
+      // Create main conversion record
+      const conversion = await storage.createIconConversion({
+        originalImageName: req.file.originalname,
+        svgCode: multiVariantResult.variants.blended.svg, // Use blended as primary
+        validationResults: [], // Add validation later
+        metadata: { approach: 'multi-variant' }
+      });
+
+      // Store all variants
+      const storedVariants = await Promise.all([
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'one-to-one',
+          svgCode: multiVariantResult.variants['one-to-one'].svg,
+          explanation: multiVariantResult.variants['one-to-one'].explanation,
+          confidence: multiVariantResult.variants['one-to-one'].confidence,
+          metadata: multiVariantResult.variants['one-to-one'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'filename-based',
+          svgCode: multiVariantResult.variants['filename-based'].svg,
+          explanation: multiVariantResult.variants['filename-based'].explanation,
+          confidence: multiVariantResult.variants['filename-based'].confidence,
+          metadata: multiVariantResult.variants['filename-based'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'common-ui',
+          svgCode: multiVariantResult.variants['common-ui'].svg,
+          explanation: multiVariantResult.variants['common-ui'].explanation,
+          confidence: multiVariantResult.variants['common-ui'].confidence,
+          metadata: multiVariantResult.variants['common-ui'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'blended',
+          svgCode: multiVariantResult.variants.blended.svg,
+          explanation: multiVariantResult.variants.blended.explanation,
+          confidence: multiVariantResult.variants.blended.confidence,
+          metadata: multiVariantResult.variants.blended.metadata
+        })
+      ]);
+
+      res.json({
+        conversionId: conversion.id,
+        originalImageName: req.file.originalname,
+        variants: {
+          'one-to-one': {
+            id: storedVariants[0].id,
+            svg: storedVariants[0].svgCode,
+            explanation: storedVariants[0].explanation,
+            confidence: storedVariants[0].confidence,
+            metadata: storedVariants[0].metadata
+          },
+          'filename-based': {
+            id: storedVariants[1].id,
+            svg: storedVariants[1].svgCode,
+            explanation: storedVariants[1].explanation,
+            confidence: storedVariants[1].confidence,
+            metadata: storedVariants[1].metadata
+          },
+          'common-ui': {
+            id: storedVariants[2].id,
+            svg: storedVariants[2].svgCode,
+            explanation: storedVariants[2].explanation,
+            confidence: storedVariants[2].confidence,
+            metadata: storedVariants[2].metadata
+          },
+          'blended': {
+            id: storedVariants[3].id,
+            svg: storedVariants[3].svgCode,
+            explanation: storedVariants[3].explanation,
+            confidence: storedVariants[3].confidence,
+            metadata: storedVariants[3].metadata
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Multi-variant icon generation error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+  
+  // Convert image to icon (legacy single-variant route)
   app.post('/api/convert-icon', upload.single('image'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {

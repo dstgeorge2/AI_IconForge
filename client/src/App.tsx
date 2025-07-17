@@ -5,11 +5,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import IconForge from "@/pages/icon-forge";
+import MultiVariantForge from "@/pages/multi-variant-forge";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={IconForge} />
+      <Route path="/" component={MultiVariantForge} />
+      <Route path="/single" component={IconForge} />
       <Route component={NotFound} />
     </Switch>
   );
