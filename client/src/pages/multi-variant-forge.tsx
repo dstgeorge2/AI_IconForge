@@ -175,10 +175,7 @@ export default function MultiVariantForge() {
       const formData = new FormData();
       formData.append('image', file);
       
-      const response = await apiRequest('/api/generate-multi-variant-icons', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await apiRequest('POST', '/api/generate-multi-variant-icons', formData);
       
       return response.json();
     },
