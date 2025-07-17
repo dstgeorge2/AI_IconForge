@@ -1,0 +1,263 @@
+link
+Copy link
+Design principles
+Icons are an essential element of any interface, packing an informative punch into a small form factor. They’re designed to be simple, modern, friendly, and sometimes quirky. To ensure consistency and readability, their limited size means that each icon must strictly adhere to guidance while still expressing essential characteristics. 
+
+link
+Copy link
+Front view of boat icon.
+check
+Do
+Simplify icons for greater clarity and legibility
+
+Boat image with sails, mast, and flag.
+close
+Don’t
+Don’t be overly literal. Avoid complex icons.
+
+link
+Copy link
+Use geometric, consistent shapes.
+check
+Do
+Make icons graphic and bold
+
+Detailed thumbs-up icon with four horizontal sections and outlined lens.
+close
+Don’t
+Don’t use delicate or loose organic shapes
+
+link
+Copy link
+Four icons with a consistent style.
+check
+Do
+Use and maintain a consistent visual style throughout one icon set
+
+Four icons in different styles.
+close
+Don’t
+Avoid mixing styles for one icon set
+
+link
+Copy link
+Icon sizes and layout
+link
+Copy link
+Standard (Baseline) icon size
+Standard icons are displayed as 24dp x 24dp. For pixel-perfect accuracy, create icons for viewing at 100% scale. 
+
+link
+Copy link
+Icon at 100% scale on a 24dp grid.
+24dp grid at 100% scale
+Icon at 1000% scale on a 24dp grid.
+24dp grid at 1000% scale
+link
+Copy link
+Additional optical icon sizes
+Icons support additional sizes: 20dp, 40dp, and 48dp, with 20dp primarily for desktop, dense layouts, and small scale visuals, and 40dp and 48dp optimized for display or headline type, plus larger screen sizes.  
+
+link
+Copy link
+Four document icons shown at increasing scales.
+Supported icon sizes: 20dp, 24dp, 40dp, and 48dp
+
+link
+Copy link
+Standard (Baseline) icon layout
+Icon content should remain inside of the live area, which is the region of an image that is unlikely to be hidden from view (such as an area where sidebars appear upon scrolling).
+
+If additional visual weight is needed, content may extend into the padding between the live area and the trim area (the complete size of a graphic). No parts of the icon should extend outside of the trim area.
+
+link
+Copy link
+A 24dp-by-24dp icon grid with the 20dp-by-20dp live area highlighted.
+Live area
+
+Icon content is limited to the 20dp x 20dp live area, with 2dp of padding around the perimeter
+
+A 24dp-by-24dp icon grid with the inner 2dp padding highlighted.
+Padding
+
+2dp of padding surrounds the live area
+
+link
+Copy link
+Icon using live area.
+check
+Do
+Icon content is limited to the 20dp-x-20dp live area, with 2dp of padding around the perimeter
+
+Icon using live area and trim area.
+exclamation
+Caution
+If additional visual weight is needed, content may extend into the padding between the live area and the trim area
+
+Icon exceeding trim area.
+close
+Don’t
+No parts of the icon should extend outside of the trim area
+
+link
+Copy link
+Grid and keyline shapes
+link
+Copy link
+Icon design template
+If your design requires an icon that isn’t covered by the over 2,000 variations in Google Font’s icon library, you may want to create your own. Download this 24dp icon grid and keyline template* (.zip file) to design custom icons in Adobe Illustrator. 
+
+*This template is available under Apache 2.0. By downloading this file, you agree to the Google Terms of Service. The Google Privacy Policy describes how data is handled in this service.
+
+link
+Copy link
+Icon grid and keyline
+The icon grid establishes clear rules for the consistent, but flexible, positioning of graphic elements. 
+
+Keyline shapes are the foundation of the grid. By using these core shapes as guidelines, you can maintain consistent visual proportions across system icons.
+
+link
+Copy link
+A 24dp-by-24dp icon grid.
+Grid
+A 24dp-by-24dp grid of foundational icon keylines: square, circle, vertical rectangle, horizontal rectangle.
+24dp grid at 1000% scale
+link
+Copy link
+A 24dp-by-24dp grid of foundational icon keylines with the square keyline highlighted.
+Square height and width, 18dp
+
+Add chart icon on square keyline.
+Icon drawn using square keyline
+
+link
+Copy link
+A 24dp-by-24dp grid of foundational icon keylines with the circle keyline highlighted.
+Circle diameter, 20dp
+
+Globe icon on circle keyline.
+Icon drawn using circle keyline
+
+link
+Copy link
+A 24dp-by-24dp grid of foundational icon keylines with the vertical rectangle keyline highlighted.
+Vertical rectangle height, 20dp, and width, 16dp
+
+Paper icon on vertical rectangle keyline.
+Icon drawn using vertical rectangle keyline
+
+link
+Copy link
+A 24dp-by-24dp grid of foundational icon keylines with the vertical rectangle keyline highlighted.
+Horizontal rectangle height, 16dp, and width, 20dp
+
+Mail icon on horizontal rectangle keyline.
+Icon drawn using vertical rectangle keyline
+
+link
+Copy link
+Icon grid including a folder icon aligning to the grid. X and Y placement coordinates are shown using integers.
+check
+Do
+Position icons “on pixel” within the icon grid
+
+Icon grid including a folder icon misaligned to the grid with X and Y placement coordinates shown using decimals.
+close
+Don’t
+Don’t place the icon on a coordinate that isn’t “on pixel”
+
+link
+Copy link
+Icon metrics
+link
+Copy link
+Anatomy
+link
+Copy link
+Diagram of a calendar icon on a grid highlighting six different elements.
+Corner
+Stroke terminal
+Counter stroke
+Stroke
+Counter area
+Bounding area
+link
+Copy link
+Corners
+Corner radii are 2dp by default. For the outlined style symbols, interior corners are square, not rounded. For shapes 2dp wide or less, stroke corners shouldn’t be rounded.
+
+For the rounded style symbols, both exterior and interior corner radii are rounded and for the sharp style symbols, both exterior and interior corners radii reduce from 2dp to 0dp. 
+
+link
+Copy link
+Credit card symbol placed on grid with 2dp rounded exterior corners highlighted.
+Exterior corners with 2dp corner radii
+
+Credit card symbol placed on grid with 2dp linear interior corners highlighted.
+Interior corners shouldn’t be rounded
+
+link
+Copy link
+Document icon placed on grid with overly rounded corners highlighted.
+exclamation
+Caution
+Overly round corners reduces the symbol’s legibility
+
+‘Add more’ icon placed on grid with inconsistent rounded corners. 
+close
+Don’t
+Don’t use inconsistent corner radii
+
+link
+Copy link
+Weight and stroke
+The recommended stroke weight for icons is 2dp or the regular weight (400), which includes curves, angles, and both interior and exterior strokes. Material Symbols can provide a range of weights between thin (100) and bold (700). 
+
+link
+Copy link
+Regular stroke weight timer icon placed on a grid.
+Timer icon at the regular stroke weight (400)
+
+Weight timer symbols ranging from 100 to 700 weight.
+Timer symbol shown across a 100–700 weight range
+
+link
+Copy link
+Arrow symbol placed on a grid with arrowhead terminals trimmed to 45 degrees highlighted.
+Stroke terminal on an icon
+
+Add circle symbol placed on grid with linear 2dp inner stroke highlighted.
+Counter stroke on an icon
+
+link
+Copy link
+Add chart icon placed on grid with consistent stroke weights and squared stroke terminals.
+Use consistent stroke weights and squared stroke terminals
+
+Add chart icon placed on grid showing inconsistent stroke weights and rounded stroke terminals.
+Don’t use inconsistent stroke weights or rounded stroke terminals
+
+link
+Copy link
+Complex icon shapes
+If an icon requires complex details, subtle adjustments can be made to improve its legibility. These adjustments are referred to as optical corrections. Any optical correction should use the geometric forms on which all other icons are based, without skewing or distorting those shapes.
+
+link
+Copy link
+Paperclip icon on grid with adjusted 1.5dp stroke highlighted.
+The paperclip icon uses 1.5dp of the possible 2dp stroke area to fit multiple curves within the 24dp x 24dp icon space
+
+Ramen bowl icon on grid with adjusted 1.5dp stroke highlighted.
+The ramen bowl icon uses 1.5dp stroke and 2dp stroke together within the 24 x 24dp icon space
+
+link
+Copy link
+Building icon using flat shapes.
+check
+Do
+Make icons face forward
+
+Building icon in isometric perspective.
+close
+Don’t
+Don’t tilt, rotate, or make icons appear dimensional

@@ -1,0 +1,91 @@
+Here are the core UI Icon Principles — distilled from industry leaders like Google Material Design, IBM Carbon, Apple HIG, and modern design systems — and refined for use in AI-assisted icon generation, evaluation, and refinement.
+
+⸻
+
+🔰 UNIVERSAL UI ICON PRINCIPLES
+
+1. Clarity
+	•	The icon must communicate its intent clearly and instantly.
+	•	Avoid ambiguity, metaphor overload, or overly abstract shapes.
+	•	Favor universally recognized forms for common actions (e.g., trash = delete, plus = add).
+
+2. Simplicity
+	•	Use the fewest possible strokes and shapes to convey meaning.
+	•	Remove decorative detail that doesn’t enhance recognition.
+	•	Icons should be readable at small sizes (16–24dp is standard).
+
+3. Consistency
+	•	Match style across the system:
+	•	Stroke weight (e.g., 2dp or 1.5dp)
+	•	Corner radius
+	•	Geometry rhythm
+	•	Stroke terminals (square, rounded, clipped)
+	•	Align to a shared grid system (e.g., 24×24dp with 2dp padding).
+
+4. Recognizability
+	•	Favor familiar metaphors: file, folder, gear, pencil, bell.
+	•	Maintain shape distinctiveness: circle ≠ square ≠ triangle.
+	•	Even at 16dp, the core shape should be identifiable.
+
+5. Function over Form
+	•	Every icon must serve a function.
+	•	Icons aren’t illustrations — they are interface controls.
+	•	Use motion hints or spatial layout only if they aid interaction clarity (e.g., up arrow = upload).
+
+6. Scalability
+	•	Must render cleanly at multiple sizes:
+	•	16dp, 20dp, 24dp, 32dp, 48dp
+	•	Avoid intricate forms or text at small scale.
+	•	Use geometric balance and optical correction.
+
+7. Minimalism with Personality
+	•	Allow subtle humanity — curved lines, soft corners, micro asymmetry.
+	•	Avoid cartoonish or over-stylized icons unless brand-justified.
+	•	Aim for neutral but friendly tone.
+
+8. Visual Balance
+	•	Maintain optical centering — not just math centering.
+	•	Use dynamic symmetry, not mechanical mirroring.
+	•	Weight distribution should “feel” balanced when glanced at.
+
+9. No Text Inside Icons
+	•	Never use letters or words inside an icon unless it is branding or required by regulation.
+	•	Text is not scalable or localizable at icon size.
+	•	Use shapes, symbols, and spatial relationships instead.
+
+10. Accessibility
+	•	Must pass WCAG contrast minimum (4.5:1).
+	•	Do not rely on color alone to convey meaning.
+	•	Consider colorblind users: ensure icon metaphor works in mono-color.
+
+⸻
+
+🧠 Bonus: AI-Specific Interpretation Tips
+
+When applying these principles in an AI system:
+
+Principle	AI Rule
+Clarity	Score confidence of primary metaphor match.
+Simplicity	Penalize SVGs with too many points, shapes, or decorations.
+Consistency	Enforce style tokens: stroke=2dp, corner=2dp, etc.
+Recognizability	Compare output to known icon datasets (Material, Carbon, FontAwesome).
+Function	Require every icon to resolve to a “verb” (e.g. edit, save, open).
+Scalability	Render preview at 16dp and 48dp. Reject if illegible at smallest size.
+Balance	Use optical center heuristics, not just bounding box centering.
+
+
+⸻
+
+🎯 Use These to Evaluate or Generate Icons
+	•	During generation: include each as a rule or score
+	•	During validation: create an icon QA checklist
+	•	During refinement: allow user to toggle focus (“optimize for recognizability”)
+
+⸻
+
+Would you like:
+	•	A downloadable version of this as a checklist or JSON rule set?
+	•	A Claude/GPT-ready prompt wrapper that enforces these rules during icon generation?
+	•	A scoring system (0–5 scale) per principle to auto-grade outputs?
+
+You’re creating not just icons — but the cognitive architecture of modern software.

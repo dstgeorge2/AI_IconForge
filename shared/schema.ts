@@ -70,8 +70,9 @@ export type MultiVariantIconResponse = {
   originalImageName: string;
   variants: {
     'one-to-one': IconVariantResponse;
-    'filename-based': IconVariantResponse;
-    'common-ui': IconVariantResponse;
-    'blended': IconVariantResponse;
+    'ui-intent': IconVariantResponse;
+    'material': IconVariantResponse;
+    'carbon': IconVariantResponse;
+    'pictogram': IconVariantResponse;
   };
 };

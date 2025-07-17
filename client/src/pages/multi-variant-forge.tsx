@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend } from 'lucide-react';
+import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend, Target, Palette, Cpu, Grid3x3, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,9 +22,11 @@ interface VariantDisplayProps {
   };
   variantType: string;
   fileName: string;
+  revisionExpanded: {[key: string]: boolean};
+  setRevisionExpanded: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>>;
 }
 
-const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, fileName }) => {
+const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, fileName, revisionExpanded, setRevisionExpanded }) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -54,29 +56,32 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
   const getVariantIcon = (type: string) => {
     switch (type) {
       case 'one-to-one': return <Image className="w-4 h-4" />;
-      case 'filename-based': return <FileText className="w-4 h-4" />;
-      case 'common-ui': return <Layers className="w-4 h-4" />;
-      case 'blended': return <Blend className="w-4 h-4" />;
+      case 'ui-intent': return <Target className="w-4 h-4" />;
+      case 'material': return <Palette className="w-4 h-4" />;
+      case 'carbon': return <Cpu className="w-4 h-4" />;
+      case 'pictogram': return <Grid3x3 className="w-4 h-4" />;
       default: return <Layers className="w-4 h-4" />;
     }
   };
 
   const getVariantLabel = (type: string) => {
     switch (type) {
-      case 'one-to-one': return 'Image-Based';
-      case 'filename-based': return 'File Name Based';
-      case 'common-ui': return 'Common UI Match';
-      case 'blended': return 'Blended Logic';
+      case 'one-to-one': return '1:1 Icon';
+      case 'ui-intent': return 'UI Intent';
+      case 'material': return 'Material';
+      case 'carbon': return 'Carbon';
+      case 'pictogram': return 'Pictogram';
       default: return 'Unknown';
     }
   };
 
   const getVariantDescription = (type: string) => {
     switch (type) {
-      case 'one-to-one': return 'Recreated from visual analysis';
-      case 'filename-based': return 'Based on parsed file name';
-      case 'common-ui': return 'Standard UI metaphor';
-      case 'blended': return 'Smart fusion of all inputs';
+      case 'one-to-one': return 'Based on image vision';
+      case 'ui-intent': return 'Based on image and name';
+      case 'material': return 'Google Material + Image';
+      case 'carbon': return 'IBM Carbon + Image';
+      case 'pictogram': return 'IBM Carbon Pictogram rules';
       default: return 'Icon variant';
     }
   };
@@ -97,11 +102,28 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
       
       <Card className="border-2 border-black bg-white">
         <CardContent className="p-4">
-          <div className="flex items-center justify-center h-32 bg-gray-50 border-2 border-black mb-4">
-            <div 
-              className="w-12 h-12"
-              dangerouslySetInnerHTML={{ __html: variant.svg }}
-            />
+          {/* Multi-size preview in horizontal row */}
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-mono text-gray-600">
+              <span>Preview at standard sizes:</span>
+              <span className="text-gray-400">16dp • 20dp • 24dp • 32dp • 48dp</span>
+            </div>
+            <div className="flex items-center gap-4 p-3 bg-gray-50 border-2 border-black rounded">
+              {[16, 20, 24, 32, 48].map(size => (
+                <div key={size} className="flex flex-col items-center gap-1">
+                  <div 
+                    className="border border-gray-300 bg-white flex items-center justify-center"
+                    style={{ width: size + 4, height: size + 4 }}
+                  >
+                    <div 
+                      style={{ width: size, height: size }}
+                      dangerouslySetInnerHTML={{ __html: variant.svg }}
+                    />
+                  </div>
+                  <span className="text-xs font-mono text-gray-500">{size}dp</span>
+                </div>
+              ))}
+            </div>
           </div>
           
           <p className="text-sm text-gray-600 mb-4 font-mono leading-relaxed">
@@ -132,6 +154,58 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
         </CardContent>
       </Card>
       
+      {/* Revision Interface */}
+      <div className="border-2 border-black bg-yellow-50 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="font-mono text-sm font-medium">Revision & Refinement</h4>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setRevisionExpanded(prev => ({ ...prev, [variantType]: !prev[variantType] }))}
+            className="p-1"
+          >
+            {revisionExpanded[variantType] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
+        </div>
+        
+        {revisionExpanded[variantType] && (
+          <div className="space-y-3">
+            <div className="text-sm font-mono">
+              <p className="text-gray-700 mb-2">What the computer sees in your image:</p>
+              <div className="p-3 bg-white border border-gray-300 rounded text-xs leading-relaxed">
+                <p><strong>Main Subject:</strong> {variant.metadata?.primarySubject || 'Analysis in progress...'}</p>
+                <p><strong>Key Features:</strong> {variant.metadata?.features?.join(', ') || 'Identifying features...'}</p>
+                <p><strong>Visual Elements:</strong> {variant.metadata?.visualElements?.join(', ') || 'Processing elements...'}</p>
+                <p><strong>Complexity Level:</strong> {variant.metadata?.complexity || 'Analyzing...'}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-mono font-medium">Attach Reference Icon</label>
+                <div className="border-2 border-dashed border-gray-300 rounded p-3 text-center text-sm text-gray-500">
+                  <Upload className="w-4 h-4 mx-auto mb-1" />
+                  Drop reference icon here
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-mono font-medium">Edit Prompt</label>
+                <textarea 
+                  placeholder="Describe how you'd like to refine this icon..."
+                  className="w-full p-2 border border-gray-300 rounded text-sm font-mono resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <Button className="w-full font-mono" variant="default">
+              Revise & Regenerate
+            </Button>
+          </div>
+        )}
+      </div>
+      
       <details className="text-xs">
         <summary className="cursor-pointer font-mono text-gray-500 hover:text-gray-700">
           Technical Details
@@ -148,6 +222,8 @@ export default function MultiVariantForge() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [multiVariantResult, setMultiVariantResult] = useState<MultiVariantIconResponse | null>(null);
   const [activeTab, setActiveTab] = useState('one-to-one');
+  const [revisionExpanded, setRevisionExpanded] = useState<{[key: string]: boolean}>({});
+  const [selectedSizes, setSelectedSizes] = useState<number[]>([16, 20, 24, 32, 48]);
   const { toast } = useToast();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -203,7 +279,7 @@ export default function MultiVariantForge() {
   const handleDownloadAll = () => {
     if (!multiVariantResult) return;
     
-    const activeVariants = ['one-to-one', 'common-ui'];
+    const activeVariants = ['one-to-one', 'ui-intent', 'material', 'carbon', 'pictogram'];
     
     activeVariants.forEach(type => {
       const variant = multiVariantResult.variants[type];
@@ -220,7 +296,7 @@ export default function MultiVariantForge() {
     
     toast({
       title: 'All icons downloaded!',
-      description: 'Downloaded 2 SVG variants'
+      description: 'Downloaded 5 SVG variants'
     });
   };
 
@@ -303,7 +379,7 @@ export default function MultiVariantForge() {
                   <div>
                     <CardTitle className="font-mono">Generated Icons</CardTitle>
                     <CardDescription className="font-mono">
-                      4 variants for {multiVariantResult.originalImageName}
+                      5 variants for {multiVariantResult.originalImageName}
                     </CardDescription>
                   </div>
                   <Button
@@ -318,14 +394,26 @@ export default function MultiVariantForge() {
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="one-to-one" className="font-mono text-sm">
-                      <Image className="w-4 h-4 mr-2" />
-                      Image-Based
+                  <TabsList className="grid w-full grid-cols-5 mb-6">
+                    <TabsTrigger value="one-to-one" className="font-mono text-xs">
+                      <Image className="w-4 h-4 mr-1" />
+                      1:1 Icon
                     </TabsTrigger>
-                    <TabsTrigger value="common-ui" className="font-mono text-sm">
-                      <Layers className="w-4 h-4 mr-2" />
-                      Common UI
+                    <TabsTrigger value="ui-intent" className="font-mono text-xs">
+                      <Target className="w-4 h-4 mr-1" />
+                      UI Intent
+                    </TabsTrigger>
+                    <TabsTrigger value="material" className="font-mono text-xs">
+                      <Palette className="w-4 h-4 mr-1" />
+                      Material
+                    </TabsTrigger>
+                    <TabsTrigger value="carbon" className="font-mono text-xs">
+                      <Cpu className="w-4 h-4 mr-1" />
+                      Carbon
+                    </TabsTrigger>
+                    <TabsTrigger value="pictogram" className="font-mono text-xs">
+                      <Grid3x3 className="w-4 h-4 mr-1" />
+                      Pictogram
                     </TabsTrigger>
                   </TabsList>
 
@@ -334,14 +422,48 @@ export default function MultiVariantForge() {
                       variant={multiVariantResult.variants['one-to-one']}
                       variantType="one-to-one"
                       fileName={multiVariantResult.originalImageName}
+                      revisionExpanded={revisionExpanded}
+                      setRevisionExpanded={setRevisionExpanded}
                     />
                   </TabsContent>
 
-                  <TabsContent value="common-ui">
+                  <TabsContent value="ui-intent">
                     <VariantDisplay
-                      variant={multiVariantResult.variants['common-ui']}
-                      variantType="common-ui"
+                      variant={multiVariantResult.variants['ui-intent']}
+                      variantType="ui-intent"
                       fileName={multiVariantResult.originalImageName}
+                      revisionExpanded={revisionExpanded}
+                      setRevisionExpanded={setRevisionExpanded}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="material">
+                    <VariantDisplay
+                      variant={multiVariantResult.variants['material']}
+                      variantType="material"
+                      fileName={multiVariantResult.originalImageName}
+                      revisionExpanded={revisionExpanded}
+                      setRevisionExpanded={setRevisionExpanded}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="carbon">
+                    <VariantDisplay
+                      variant={multiVariantResult.variants['carbon']}
+                      variantType="carbon"
+                      fileName={multiVariantResult.originalImageName}
+                      revisionExpanded={revisionExpanded}
+                      setRevisionExpanded={setRevisionExpanded}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="pictogram">
+                    <VariantDisplay
+                      variant={multiVariantResult.variants['pictogram']}
+                      variantType="pictogram"
+                      fileName={multiVariantResult.originalImageName}
+                      revisionExpanded={revisionExpanded}
+                      setRevisionExpanded={setRevisionExpanded}
                     />
                   </TabsContent>
                 </Tabs>

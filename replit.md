@@ -10,19 +10,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **Simplified Two-Variant System** (2025-01-17): Streamlined from 4 to 2 focused variants:
-  - **Image-Based**: Enhanced visual reconstruction with better tool recognition (pencils, brushes, etc.)
-  - **Common UI**: Standard UI metaphors from Material Design, Carbon, and FontAwesome
-  - Removed filename-based variant (often produces garbage) and blended variant
-- **Enhanced Visual Reading** (2025-01-17): Improved image-based generation:
-  - Better tool recognition for pencils, brushes, stylus with characteristic features
-  - Geometric interpretation that preserves essential visual metaphors
-  - Optical balance and proportional fidelity from original images
-- **Intelligent Prompting System** (2025-01-17): Advanced multi-modal analysis combining:
-  - Filename semantic analysis for detecting actions, objects, and contextual categories
-  - Image vision analysis for identifying visual elements, composition, and complexity
-  - Common UI pattern matching against established icon conventions
-  - Enhanced prompt generation bridging filename intent with visual analysis
+- **Expanded 5-Variant System** (2025-01-17): Complete redesign with specialized design approaches:
+  - **Tab 1: 1:1 Icon** - Based on image vision with enhanced visual reconstruction
+  - **Tab 2: UI Intent** - Based on image and filename analysis for semantic understanding
+  - **Tab 3: Material** - Google Material Design + image following strict design system
+  - **Tab 4: Carbon** - IBM Carbon Design + image with consistent visual language
+  - **Tab 5: Pictogram** - IBM Carbon pictogram rules for larger display contexts
+- **Multi-Size Preview System** (2025-01-17): Icons displayed at standard sizes:
+  - Horizontal row preview: 16dp, 20dp, 24dp, 32dp, 48dp
+  - Proper sizing constraints and optical testing at multiple scales
+  - Scalability validation for all design system requirements
+- **Revision Interface** (2025-01-17): Added comprehensive refinement system:
+  - Computer vision descriptions in simple language for user guidance
+  - Reference icon attachment for iterative improvements
+  - Custom prompt editing for specific modifications
+  - Expandable revision panels for each variant type
+- **Design System Integration** (2025-01-17): Enhanced compliance with industry standards:
+  - Material Design specifications with keyline shapes and stroke weights
+  - IBM Carbon Design system with proper grid and corner radius rules
+  - Two-pass refinement system for optimal icon principles
+  - Accessibility and touch target compliance
 
 ## System Architecture
 

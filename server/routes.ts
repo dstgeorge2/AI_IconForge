@@ -37,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create main conversion record
       const conversion = await storage.createIconConversion({
         originalImageName: req.file.originalname,
-        svgCode: multiVariantResult.variants.blended.svg, // Use blended as primary
+        svgCode: multiVariantResult.variants['one-to-one'].svg, // Use one-to-one as primary
         validationResults: [], // Add validation later
         metadata: { approach: 'multi-variant' }
       });
@@ -54,27 +54,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }),
         storage.createIconVariant({
           conversionId: conversion.id,
-          variantType: 'filename-based',
-          svgCode: multiVariantResult.variants['filename-based'].svg,
-          explanation: multiVariantResult.variants['filename-based'].explanation,
-          confidence: multiVariantResult.variants['filename-based'].confidence,
-          metadata: multiVariantResult.variants['filename-based'].metadata
+          variantType: 'ui-intent',
+          svgCode: multiVariantResult.variants['ui-intent'].svg,
+          explanation: multiVariantResult.variants['ui-intent'].explanation,
+          confidence: multiVariantResult.variants['ui-intent'].confidence,
+          metadata: multiVariantResult.variants['ui-intent'].metadata
         }),
         storage.createIconVariant({
           conversionId: conversion.id,
-          variantType: 'common-ui',
-          svgCode: multiVariantResult.variants['common-ui'].svg,
-          explanation: multiVariantResult.variants['common-ui'].explanation,
-          confidence: multiVariantResult.variants['common-ui'].confidence,
-          metadata: multiVariantResult.variants['common-ui'].metadata
+          variantType: 'material',
+          svgCode: multiVariantResult.variants.material.svg,
+          explanation: multiVariantResult.variants.material.explanation,
+          confidence: multiVariantResult.variants.material.confidence,
+          metadata: multiVariantResult.variants.material.metadata
         }),
         storage.createIconVariant({
           conversionId: conversion.id,
-          variantType: 'blended',
-          svgCode: multiVariantResult.variants.blended.svg,
-          explanation: multiVariantResult.variants.blended.explanation,
-          confidence: multiVariantResult.variants.blended.confidence,
-          metadata: multiVariantResult.variants.blended.metadata
+          variantType: 'carbon',
+          svgCode: multiVariantResult.variants.carbon.svg,
+          explanation: multiVariantResult.variants.carbon.explanation,
+          confidence: multiVariantResult.variants.carbon.confidence,
+          metadata: multiVariantResult.variants.carbon.metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'pictogram',
+          svgCode: multiVariantResult.variants.pictogram.svg,
+          explanation: multiVariantResult.variants.pictogram.explanation,
+          confidence: multiVariantResult.variants.pictogram.confidence,
+          metadata: multiVariantResult.variants.pictogram.metadata
         })
       ]);
 
@@ -89,26 +97,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
             confidence: storedVariants[0].confidence,
             metadata: storedVariants[0].metadata
           },
-          'filename-based': {
+          'ui-intent': {
             id: storedVariants[1].id,
             svg: storedVariants[1].svgCode,
             explanation: storedVariants[1].explanation,
             confidence: storedVariants[1].confidence,
             metadata: storedVariants[1].metadata
           },
-          'common-ui': {
+          'material': {
             id: storedVariants[2].id,
             svg: storedVariants[2].svgCode,
             explanation: storedVariants[2].explanation,
             confidence: storedVariants[2].confidence,
             metadata: storedVariants[2].metadata
           },
-          'blended': {
+          'carbon': {
             id: storedVariants[3].id,
             svg: storedVariants[3].svgCode,
             explanation: storedVariants[3].explanation,
             confidence: storedVariants[3].confidence,
             metadata: storedVariants[3].metadata
+          },
+          'pictogram': {
+            id: storedVariants[4].id,
+            svg: storedVariants[4].svgCode,
+            explanation: storedVariants[4].explanation,
+            confidence: storedVariants[4].confidence,
+            metadata: storedVariants[4].metadata
           }
         }
       });

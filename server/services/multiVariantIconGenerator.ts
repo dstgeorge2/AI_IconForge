@@ -110,6 +110,362 @@ Explain what key visual elements you preserved and how you simplified complex fe
   };
 }
 
+// Generate UI Intent - Combine image and filename for semantic understanding
+export async function generateUIIntentVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const semantic = context.intelligentPrompt.semanticAnalysis;
+  const imageAnalysis = context.intelligentPrompt.imageAnalysis;
+  
+  const prompt = `
+# UI INTENT GENERATION
+
+## OBJECTIVE
+Combine image visual analysis with filename semantics to create an icon that represents the user's intent.
+
+## SEMANTIC CONTEXT
+- **Filename**: ${semantic.filename}
+- **Detected Action**: ${semantic.detectedAction}
+- **Detected Object**: ${semantic.detectedObject}
+- **Intent**: ${semantic.universalMetaphor}
+
+## VISUAL CONTEXT
+- **Image Shows**: ${imageAnalysis.primarySubject}
+- **Visual Elements**: ${imageAnalysis.visualElements.join(', ')}
+- **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
+
+## GENERATION STRATEGY
+1. **Primary Intent**: Use filename to understand the user's goal
+2. **Visual Validation**: Use image to confirm or refine the metaphor
+3. **Context Synthesis**: Combine both sources for clearer intent
+4. **UI Conventions**: Apply standard UI patterns for the identified intent
+
+## DESIGN PRINCIPLES
+- Follow Material Design principles for clarity and consistency
+- 24x24dp canvas, 20x20dp live area, 2dp stroke weight
+- Use universally recognized metaphors
+- Ensure scalability from 16dp to 48dp
+- Two-pass refinement for optimal icon principles
+
+Generate an icon that clearly represents the user's intent by combining image analysis with filename semantics.
+
+Explain how you interpreted the user's intent and which elements guided your design decisions.
+`;
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL_STR,
+    max_tokens: 2000,
+    system: "You are an expert UI icon designer. Apply the two-pass refinement system to generate clean, purposeful icons. Always respond with valid SVG code and explanations.",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: prompt
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: getMediaType(context.fileName),
+              data: context.base64Image
+            }
+          }
+        ]
+      }
+    ]
+  });
+
+  const result = parseIconResponse(response.content[0].text);
+  const confidence = 88;
+
+  return {
+    variant: {
+      id: 0,
+      conversionId: 0,
+      variantType: 'ui-intent',
+      svgCode: result.svg,
+      explanation: result.explanation || "Intent-driven design combining image and filename analysis.",
+      confidence,
+      metadata: { approach: 'intent-synthesis', source: 'image-filename-fusion' },
+      createdAt: new Date()
+    },
+    svg: result.svg,
+    explanation: result.explanation || "Intent-driven design combining image and filename analysis.",
+    confidence,
+    metadata: { approach: 'intent-synthesis', source: 'image-filename-fusion' }
+  };
+}
+
+// Generate Material Design variant
+export async function generateMaterialVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const semantic = context.intelligentPrompt.semanticAnalysis;
+  const imageAnalysis = context.intelligentPrompt.imageAnalysis;
+  
+  const prompt = `
+# MATERIAL DESIGN GENERATION
+
+## OBJECTIVE
+Create an icon following Google Material Design principles, using the uploaded image as visual guidance.
+
+## MATERIAL DESIGN SPECIFICATIONS
+- **Grid System**: 24x24dp with 20x20dp live area, 2dp padding
+- **Keyline Shapes**: Square (18dp), Circle (20dp), Vertical rectangle (20x16dp), Horizontal rectangle (16x20dp)
+- **Stroke Weight**: 2dp regular weight (400), consistent throughout
+- **Corner Radius**: 2dp exterior corners, square interior corners
+- **Stroke Terminals**: Squared terminals, no rounded caps
+- **Style**: Geometric, consistent, modern, friendly
+
+## VISUAL REFERENCE
+- **Image Content**: ${imageAnalysis.primarySubject}
+- **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
+- **Geometric Hints**: ${imageAnalysis.geometryHints.join(', ')}
+
+## MATERIAL DESIGN PRINCIPLES
+1. **Clarity**: Communicate intent clearly and instantly
+2. **Simplicity**: Use fewest possible strokes for meaning
+3. **Consistency**: Match Material Design system tokens
+4. **Recognizability**: Favor familiar Material metaphors
+5. **Scalability**: Render cleanly at 16dp, 20dp, 24dp, 32dp, 48dp
+6. **Function over Form**: Serve interface function, not decoration
+
+## GENERATION REQUIREMENTS
+- Apply Material Design grid and keyline shapes
+- Use consistent 2dp stroke weight
+- Ensure optical centering and balance
+- Two-pass refinement for Material Design compliance
+- Test readability at multiple sizes
+
+Generate a clean Material Design icon that uses the uploaded image as visual reference while strictly following Google's design system.
+
+Explain which Material Design principles guided your design and how you adapted the image content.
+`;
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL_STR,
+    max_tokens: 2000,
+    system: "You are an expert Material Design icon creator. Apply Google's design system rigorously with two-pass refinement. Always respond with valid SVG code and explanations.",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: prompt
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: getMediaType(context.fileName),
+              data: context.base64Image
+            }
+          }
+        ]
+      }
+    ]
+  });
+
+  const result = parseIconResponse(response.content[0].text);
+  const confidence = 92;
+
+  return {
+    variant: {
+      id: 0,
+      conversionId: 0,
+      variantType: 'material',
+      svgCode: result.svg,
+      explanation: result.explanation || "Material Design icon following Google's design system.",
+      confidence,
+      metadata: { approach: 'material-design', source: 'google-design-system' },
+      createdAt: new Date()
+    },
+    svg: result.svg,
+    explanation: result.explanation || "Material Design icon following Google's design system.",
+    confidence,
+    metadata: { approach: 'material-design', source: 'google-design-system' }
+  };
+}
+
+// Generate Carbon Design variant
+export async function generateCarbonVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const semantic = context.intelligentPrompt.semanticAnalysis;
+  const imageAnalysis = context.intelligentPrompt.imageAnalysis;
+  
+  const prompt = `
+# IBM CARBON DESIGN GENERATION
+
+## OBJECTIVE
+Create an icon following IBM Carbon Design System principles, using the uploaded image as visual guidance.
+
+## CARBON DESIGN SPECIFICATIONS
+- **Grid System**: 24x24dp artboard, optimized for 16px baseline
+- **Stroke Weight**: 2dp regular weight, consistent curves and angles
+- **Corner Radius**: 2dp default, interior corners square for outlined style
+- **Stroke Terminals**: Squared terminals, consistent throughout
+- **Style**: Modern, friendly, sometimes quirky, but always functional
+- **Touch Targets**: Design for 44px minimum touch target compatibility
+
+## VISUAL REFERENCE
+- **Image Content**: ${imageAnalysis.primarySubject}
+- **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
+- **Complexity**: ${imageAnalysis.complexity}
+
+## CARBON DESIGN PRINCIPLES
+1. **Clarity**: Essential for interface communication
+2. **Consistency**: Maintain Carbon's visual language
+3. **Simplicity**: Geometric, consistent shapes
+4. **Accessibility**: 4.5:1 contrast ratio compliance
+5. **Scalability**: Optimized for 16px, 20px, 24px, 32px display
+6. **Alignment**: Center-aligned with text, not baseline-aligned
+
+## GENERATION REQUIREMENTS
+- Apply Carbon's stroke weight and corner specifications
+- Use geometric forms without skewing or distortion
+- Ensure monochromatic, solid color design
+- Two-pass refinement for Carbon compliance
+- Face forward perspective, avoid dimensional appearance
+
+Generate a clean Carbon Design icon that uses the uploaded image as visual reference while strictly following IBM's design system.
+
+Explain which Carbon Design principles guided your design and how you adapted the image content.
+`;
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL_STR,
+    max_tokens: 2000,
+    system: "You are an expert IBM Carbon Design icon creator. Apply IBM's design system rigorously with two-pass refinement. Always respond with valid SVG code and explanations.",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: prompt
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: getMediaType(context.fileName),
+              data: context.base64Image
+            }
+          }
+        ]
+      }
+    ]
+  });
+
+  const result = parseIconResponse(response.content[0].text);
+  const confidence = 90;
+
+  return {
+    variant: {
+      id: 0,
+      conversionId: 0,
+      variantType: 'carbon',
+      svgCode: result.svg,
+      explanation: result.explanation || "Carbon Design icon following IBM's design system.",
+      confidence,
+      metadata: { approach: 'carbon-design', source: 'ibm-design-system' },
+      createdAt: new Date()
+    },
+    svg: result.svg,
+    explanation: result.explanation || "Carbon Design icon following IBM's design system.",
+    confidence,
+    metadata: { approach: 'carbon-design', source: 'ibm-design-system' }
+  };
+}
+
+// Generate Pictogram variant using IBM Carbon rules
+export async function generatePictogramVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const semantic = context.intelligentPrompt.semanticAnalysis;
+  const imageAnalysis = context.intelligentPrompt.imageAnalysis;
+  
+  const prompt = `
+# IBM CARBON PICTOGRAM GENERATION
+
+## OBJECTIVE
+Create a pictogram following IBM Carbon Design System pictogram rules, using the uploaded image as visual guidance.
+
+## CARBON PICTOGRAM SPECIFICATIONS
+- **Purpose**: Illustrative icons for larger display contexts
+- **Grid System**: 24x24dp base, but optimized for 32px and 48px display
+- **Stroke Weight**: Consistent 2dp weight, simplified for pictogram clarity
+- **Style**: More illustrative than standard icons, but still geometric
+- **Usage**: Headlines, larger screen contexts, display type applications
+- **Clarity**: Must be readable at distance and larger sizes
+
+## VISUAL REFERENCE
+- **Image Content**: ${imageAnalysis.primarySubject}
+- **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
+- **Visual Elements**: ${imageAnalysis.visualElements.join(', ')}
+
+## PICTOGRAM DESIGN PRINCIPLES
+1. **Illustrative Clarity**: More detailed than standard icons
+2. **Geometric Foundation**: Based on Carbon's geometric forms
+3. **Simplified Complexity**: Allow more detail while maintaining clarity
+4. **Consistent Style**: Match Carbon's pictogram visual language
+5. **Scalability**: Optimized for 32dp, 40dp, 48dp display
+6. **Communicative**: Tell a story or represent concepts more fully
+
+## GENERATION REQUIREMENTS
+- Apply Carbon's pictogram guidelines
+- Use consistent stroke weight and geometric foundation
+- Allow more illustrative detail than standard icons
+- Two-pass refinement for pictogram compliance
+- Ensure clarity at larger display sizes
+
+Generate a clean Carbon Design pictogram that uses the uploaded image as visual reference while following IBM's pictogram specifications.
+
+Explain which pictogram principles guided your design and how you created a more illustrative version.
+`;
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL_STR,
+    max_tokens: 2000,
+    system: "You are an expert IBM Carbon Design pictogram creator. Apply IBM's pictogram system rigorously with two-pass refinement. Always respond with valid SVG code and explanations.",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: prompt
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: getMediaType(context.fileName),
+              data: context.base64Image
+            }
+          }
+        ]
+      }
+    ]
+  });
+
+  const result = parseIconResponse(response.content[0].text);
+  const confidence = 85;
+
+  return {
+    variant: {
+      id: 0,
+      conversionId: 0,
+      variantType: 'pictogram',
+      svgCode: result.svg,
+      explanation: result.explanation || "Carbon Design pictogram with illustrative clarity.",
+      confidence,
+      metadata: { approach: 'carbon-pictogram', source: 'ibm-pictogram-system' },
+      createdAt: new Date()
+    },
+    svg: result.svg,
+    explanation: result.explanation || "Carbon Design pictogram with illustrative clarity.",
+    confidence,
+    metadata: { approach: 'carbon-pictogram', source: 'ibm-pictogram-system' }
+  };
+}
+
 // Generate File Name Based - Parse filename and use semantic metaphors
 export async function generateFileNameBasedVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
   const semantic = context.intelligentPrompt.semanticAnalysis;
@@ -355,12 +711,15 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
     intelligentPrompt
   };
   
-  console.log('🎯 Multi-Variant Generation - Generating 2 variants...');
+  console.log('🎯 Multi-Variant Generation - Generating 5 variants...');
   
-  // Generate only the two key variants in parallel
-  const [oneToOne, commonUI] = await Promise.all([
+  // Generate all 5 variants in parallel
+  const [oneToOne, uiIntent, material, carbon, pictogram] = await Promise.all([
     generateOneToOneVariant(context),
-    generateCommonUIVariant(context)
+    generateUIIntentVariant(context),
+    generateMaterialVariant(context),
+    generateCarbonVariant(context),
+    generatePictogramVariant(context)
   ]);
   
   console.log('✅ Multi-Variant Generation - All variants generated successfully');
@@ -370,9 +729,10 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
     originalImageName: fileName,
     variants: {
       'one-to-one': oneToOne,
-      'filename-based': oneToOne, // Keep for compatibility but use same as one-to-one
-      'common-ui': commonUI,
-      'blended': commonUI // Keep for compatibility but use same as common-ui
+      'ui-intent': uiIntent,
+      'material': material,
+      'carbon': carbon,
+      'pictogram': pictogram
     }
   };
 }
