@@ -6,7 +6,6 @@ import DropZone from '@/components/DropZone';
 import IconPreview from '@/components/IconPreview';
 import ValidationReport from '@/components/ValidationReport';
 import ExportControls from '@/components/ExportControls';
-import ComplexityFeedback from '@/components/ComplexityFeedback';
 import { validateIcon } from '@/lib/iconValidation';
 import { ValidationRule } from '@/lib/styleGuide';
 
@@ -15,32 +14,6 @@ interface ConversionResult {
   svg: string;
   metadata: any;
   validationResults: ValidationRule[];
-  complexityAnalysis?: {
-    complexity_score: number;
-    rating: 'low' | 'medium' | 'high';
-    flags: string[];
-    recommend_simplification: boolean;
-    alternatives: Array<{
-      type: string;
-      title: string;
-      description: string;
-      action: string;
-      confidence: number;
-    }>;
-    feedback: Array<{
-      type: string;
-      message: string;
-      severity: 'info' | 'warning' | 'error';
-    }>;
-  };
-  alternatives?: Array<{
-    type: string;
-    title: string;
-    description: string;
-    action: string;
-    confidence: number;
-  }>;
-  canRefine?: boolean;
 }
 
 export default function IconForge() {
@@ -83,32 +56,6 @@ export default function IconForge() {
     }
   });
 
-  const refineMutation = useMutation({
-    mutationFn: async ({ type, feedback }: { type: string; feedback: string }) => {
-      if (!generatedIcon) throw new Error('No icon to refine');
-      
-      const response = await apiRequest('POST', '/api/refine-icon', {
-        originalIconId: generatedIcon.id,
-        feedback,
-        refinementType: type
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({ 
-        title: "Refinement suggestions generated",
-        description: data.reasoning || "AI has analyzed your feedback and provided suggestions"
-      });
-    },
-    onError: (error: Error) => {
-      toast({ 
-        title: "Refinement failed", 
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
   const handleFileSelect = (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
       toast({ 
@@ -130,10 +77,6 @@ export default function IconForge() {
     setConversionError(null);
     
     convertMutation.mutate(file);
-  };
-
-  const handleRefine = (type: string, feedback: string) => {
-    refineMutation.mutate({ type, feedback });
   };
 
   const UploadedImagePreview = () => (
@@ -296,14 +239,6 @@ export default function IconForge() {
             />
             
             <ValidationReport validationResults={validationResults} />
-            
-            {generatedIcon?.complexityAnalysis && (
-              <ComplexityFeedback 
-                analysis={generatedIcon.complexityAnalysis}
-                onRefine={handleRefine}
-                isRefining={refineMutation.isPending}
-              />
-            )}
             
             <SvgOutput />
           </div>

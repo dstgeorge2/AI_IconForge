@@ -307,11 +307,11 @@ QUALITY METRICS:
     const intent = this.intent;
     const guidance = [];
     
-    if (intent?.action && actionPatterns[intent.action]) {
+    if (actionPatterns[intent.action]) {
       guidance.push(`ACTION PATTERN: ${actionPatterns[intent.action]}`);
     }
     
-    if (intent?.object && objectPatterns[intent.object]) {
+    if (objectPatterns[intent.object]) {
       guidance.push(`OBJECT PATTERN: ${objectPatterns[intent.object]}`);
     }
     

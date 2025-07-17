@@ -5,8 +5,6 @@ import { generateAdaptivePrompt, QUALITY_ASSURANCE_PROMPTS } from '../prompts/ad
 import { TwoPassIconGenerator } from '../prompts/icon_prompt_engine.js';
 import SVGValidator from '../prompts/validate_output.js';
 import RepromptFixer from '../prompts/reprompt_fixer.js';
-import ComplexityAnalyzer from '../prompts/complexity_analyzer.js';
-import RefinementEngine from '../prompts/refinement_engine.js';
 
 /*
 <important_code_snippet_instructions>
@@ -88,28 +86,26 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
   }
 
   try {
-    // Initialize 2-pass generation system with complexity analysis
+    // Initialize 2-pass generation system
     const generator = new TwoPassIconGenerator();
     const validator = new SVGValidator();
     const repromptFixer = new RepromptFixer();
-    const complexityAnalyzer = new ComplexityAnalyzer();
-    const refinementEngine = new RefinementEngine();
     
     // Convert buffer to base64
     const base64Image = imageBuffer.toString('base64');
     const mediaType = getMediaType(fileName);
     
     // PASS 1: Generate comprehensive prompt with semantic analysis
-    const pass1Response = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
+    const pass1 = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
     
-    console.log('🎯 2-Pass System - Pass 1 Intent:', pass1Response.pass1.semanticIntent);
-    console.log('🎨 2-Pass System - Pass 1 Spec:', pass1Response.pass1.visualSpec);
+    console.log('🎯 2-Pass System - Pass 1 Intent:', pass1.semanticIntent);
+    console.log('🎨 2-Pass System - Pass 1 Spec:', pass1.visualSpec);
     
     // Execute Pass 1 with Anthropic
-    const pass1ClaudeResponse = await anthropic.messages.create({
+    const pass1Response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR, // "claude-sonnet-4-20250514"
       max_tokens: 3000,
-      system: pass1Response.prompt,
+      system: pass1.prompt,
       messages: [
         {
           role: "user",
@@ -134,7 +130,7 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
     });
 
     // Parse Pass 1 response
-    let pass1Result = await parseClaudeResponse(pass1ClaudeResponse);
+    let pass1Result = await parseClaudeResponse(pass1Response);
     
     // PASS 2: Validate and potentially reprompt
     const validation = validator.validateSVG(pass1Result.svg, pass1Result);
@@ -193,22 +189,8 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
       console.log('✅ 2-Pass System - Pass 1 successful, no corrections needed');
     }
     
-    // Analyze icon complexity and generate improvement suggestions
-    const complexityAnalysis = complexityAnalyzer.analyzeComplexity(finalResult.svg, finalResult);
-    const alternatives = refinementEngine.generateComplexityBasedAlternatives(
-      complexityAnalysis.complexity_score, 
-      pass1Response.pass1.semanticIntent || { filename: fileName.replace(/\.[^/.]+$/, ''), intent: 'generic icon' }
-    );
-    
     // Convert validation results to legacy format
     const legacyValidation = convertValidationToLegacy(finalValidation);
-    
-    console.log('🧠 Complexity Analysis:', {
-      score: complexityAnalysis.complexity_score,
-      rating: complexityAnalysis.rating,
-      flags: complexityAnalysis.flags.length,
-      alternatives: alternatives.length
-    });
     
     return {
       svg: finalResult.svg,
@@ -220,15 +202,12 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
         fillUsed: finalResult.fillUsed || false,
         validated: finalValidation.isValid,
         conceptualPurpose: finalResult.conceptualPurpose,
-        semanticIntent: pass1Response.pass1.semanticIntent,
+        semanticIntent: pass1.semanticIntent,
         validationSummary: finalValidation.summary,
         originalFilename: fileName,
-        suggestedFilename: pass1Response.pass1.semanticIntent?.filename ? pass1Response.pass1.semanticIntent.filename + '.svg' : fileName.replace(/\.[^/.]+$/, '.svg')
+        suggestedFilename: pass1.semanticIntent.filename + '.svg'
       },
-      validationResults: legacyValidation,
-      complexityAnalysis: complexityAnalysis,
-      alternatives: alternatives,
-      canRefine: complexityAnalysis.complexity_score > 0.4
+      validationResults: legacyValidation
     };
 
   } catch (error) {
