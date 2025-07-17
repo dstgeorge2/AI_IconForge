@@ -5,6 +5,7 @@ import { generateMetaphorVariants, resolveMetaphor, getBestMetaphor, MetaphorCon
 import { validateIcon } from './iconValidation';
 import { validateIconAtMultipleSizes } from './previewValidator';
 import { validateIconAgainstSet, analyzeIconSet, generateSetConsistencyRecommendations } from './setAwareValidator';
+import { validateSVG } from './svgValidation';
 
 /*
 <important_code_snippet_instructions>
@@ -97,21 +98,44 @@ Explain what key visual elements you preserved and how you simplified complex fe
   const result = parseIconResponse(response.content[0].text);
   const confidence = context.intelligentPrompt.imageAnalysis.primarySubject !== 'unknown' ? 85 : 45;
 
+  // Enhanced validation pipeline
+  const svgValidation = await validateSVG(result.svg);
+  const validation = await validateIcon(result.svg);
+  const previewValidation = await validateIconAtMultipleSizes(result.svg);
+  
+  // Use validated SVG if available
+  const finalSVG = svgValidation.normalizedSVG || result.svg;
+  
+  // Adjust confidence based on all validation results
+  const adjustedConfidence = Math.min(confidence, validation.overallScore, svgValidation.confidence);
+
   return {
     variant: {
       id: 0,
       conversionId: 0,
       variantType: 'one-to-one',
-      svgCode: result.svg,
+      svgCode: finalSVG,
       explanation: result.explanation || "Recreated visually from image with geometric adaptation.",
-      confidence,
-      metadata: { approach: 'visual-reconstruction', source: 'image-analysis' },
+      confidence: adjustedConfidence,
+      metadata: { 
+        approach: 'visual-reconstruction', 
+        source: 'image-analysis',
+        validation: validation,
+        previewValidation: previewValidation,
+        svgValidation: svgValidation
+      },
       createdAt: new Date()
     },
-    svg: result.svg,
+    svg: finalSVG,
     explanation: result.explanation || "Recreated visually from image with geometric adaptation.",
-    confidence,
-    metadata: { approach: 'visual-reconstruction', source: 'image-analysis' }
+    confidence: adjustedConfidence,
+    metadata: { 
+      approach: 'visual-reconstruction', 
+      source: 'image-analysis',
+      validation: validation,
+      previewValidation: previewValidation,
+      svgValidation: svgValidation
+    }
   };
 }
 
@@ -183,21 +207,44 @@ Explain how you interpreted the user's intent and which elements guided your des
   const result = parseIconResponse(response.content[0].text);
   const confidence = 88;
 
+  // Enhanced validation pipeline
+  const svgValidation = await validateSVG(result.svg);
+  const validation = await validateIcon(result.svg);
+  const previewValidation = await validateIconAtMultipleSizes(result.svg);
+  
+  // Use validated SVG if available
+  const finalSVG = svgValidation.normalizedSVG || result.svg;
+  
+  // Adjust confidence based on all validation results
+  const adjustedConfidence = Math.min(confidence, validation.overallScore, svgValidation.confidence);
+
   return {
     variant: {
       id: 0,
       conversionId: 0,
       variantType: 'ui-intent',
-      svgCode: result.svg,
+      svgCode: finalSVG,
       explanation: result.explanation || "Intent-driven design combining image and filename analysis.",
-      confidence,
-      metadata: { approach: 'intent-synthesis', source: 'image-filename-fusion' },
+      confidence: adjustedConfidence,
+      metadata: { 
+        approach: 'intent-synthesis', 
+        source: 'image-filename-fusion',
+        validation: validation,
+        previewValidation: previewValidation,
+        svgValidation: svgValidation
+      },
       createdAt: new Date()
     },
-    svg: result.svg,
+    svg: finalSVG,
     explanation: result.explanation || "Intent-driven design combining image and filename analysis.",
-    confidence,
-    metadata: { approach: 'intent-synthesis', source: 'image-filename-fusion' }
+    confidence: adjustedConfidence,
+    metadata: { 
+      approach: 'intent-synthesis', 
+      source: 'image-filename-fusion',
+      validation: validation,
+      previewValidation: previewValidation,
+      svgValidation: svgValidation
+    }
   };
 }
 
@@ -977,7 +1024,8 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
   console.log('🎯 Multi-Variant Generation - Starting intelligent analysis...');
   
   // Generate intelligent prompt analysis
-  const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image, additionalPrompt);
+  const mediaType = getMediaType(fileName);
+  const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image, mediaType, additionalPrompt);
   
   const context: VariantGenerationContext = {
     fileName,

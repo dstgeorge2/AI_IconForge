@@ -34,6 +34,9 @@ export interface ImageVisionAnalysis {
   recognizableFeatures: string[];
   complexity: 'simple' | 'moderate' | 'complex';
   geometryHints: string[];
+  structuralElements?: string[];
+  strokeStyle?: string;
+  metaphorSuggestions?: string[];
 }
 
 export interface CommonPatternMatch {
@@ -307,27 +310,46 @@ function extractVisualPatterns(cleanName: string, action: string, object: string
   return [...new Set(patterns)]; // Remove duplicates
 }
 
-// Analyze image using vision API
+// Analyze image using vision API with enhanced multimodal pipeline
 export async function analyzeImageVision(imageBase64: string, mediaType: string): Promise<ImageVisionAnalysis> {
   try {
+    // Enhanced structured prompt for better computer vision analysis
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
-      max_tokens: 1000,
+      max_tokens: 1500,
+      system: `You are an expert computer vision analyst specializing in icon conversion. Your task is to extract structured visual primitives and semantic content from images that will be used to generate production-grade UI icons.
+
+Focus on:
+1. Shape decomposition and geometric primitives
+2. Recognizable tool/object metaphors
+3. Structural relationships between elements
+4. Style and stroke characteristics
+5. Icon-relevant semantic meaning`,
       messages: [{
         role: "user",
         content: [
           {
             type: "text",
-            text: `Analyze this image for icon conversion. Extract:
-1. Primary subject (main focus)
-2. Visual elements (shapes, objects, text)
-3. Dominant colors
-4. Composition style
-5. Most recognizable features
-6. Complexity level (simple/moderate/complex)
-7. Geometric hints (what basic shapes could represent this)
+            text: `Analyze this image for icon conversion using a multi-stage computer vision approach:
 
-Respond in JSON format with keys: primarySubject, visualElements, colors, composition, recognizableFeatures, complexity, geometryHints`
+## STAGE 1: SHAPE DETECTION & STRUCTURAL ANALYSIS
+- Main geometric shapes (circles, rectangles, triangles, paths)
+- Stroke characteristics (thick, thin, outline, filled)
+- Symmetry and balance
+- Topological relationships (connected, separate, overlapping)
+
+## STAGE 2: OBJECT RECOGNITION & METAPHOR EXTRACTION
+- Primary subject identification
+- Tool/object metaphors (gear, folder, arrow, etc.)
+- Recognizable UI icon patterns
+- Semantic meaning and implied function
+
+## STAGE 3: STYLE & COMPLEXITY ASSESSMENT
+- Visual style (outline, filled, sketch, geometric)
+- Complexity level for icon conversion
+- Geometric hints for simplification
+
+Return structured JSON with keys: primarySubject, visualElements, colors, composition, recognizableFeatures, complexity, geometryHints, structuralElements, strokeStyle, metaphorSuggestions`
           },
           {
             type: "image",
@@ -359,7 +381,10 @@ Respond in JSON format with keys: primarySubject, visualElements, colors, compos
       composition: result.composition || 'centered',
       recognizableFeatures: result.recognizableFeatures || [],
       complexity: result.complexity || 'moderate',
-      geometryHints: result.geometryHints || []
+      geometryHints: result.geometryHints || [],
+      structuralElements: result.structuralElements || [],
+      strokeStyle: result.strokeStyle || 'outline',
+      metaphorSuggestions: result.metaphorSuggestions || []
     };
   } catch (error) {
     console.error('Vision analysis failed:', error);
@@ -370,7 +395,10 @@ Respond in JSON format with keys: primarySubject, visualElements, colors, compos
       composition: 'centered',
       recognizableFeatures: [],
       complexity: 'moderate',
-      geometryHints: []
+      geometryHints: [],
+      structuralElements: [],
+      strokeStyle: 'outline',
+      metaphorSuggestions: []
     };
   }
 }
@@ -546,8 +574,11 @@ Based on the combined analysis, create an SVG icon that:
    - Combined: ${semanticAnalysis.universalMetaphor}
 
 3. **VISUAL INTEGRATION**: ${visionWorked ? 
-   `Combine filename semantics with image visual elements:
+   `Combine filename semantics with enhanced image analysis:
    - Focus on: ${imageAnalysis.primarySubject}
+   - Structural elements: ${imageAnalysis.structuralElements?.join(', ') || 'basic shapes'}
+   - Stroke style: ${imageAnalysis.strokeStyle || 'outline'}
+   - Metaphor suggestions: ${imageAnalysis.metaphorSuggestions?.slice(0, 2).join(' and ') || 'geometric representation'}
    - Emphasize: ${imageAnalysis.recognizableFeatures.slice(0, 2).join(' and ')}
    - Simplify: ${imageAnalysis.complexity === 'complex' ? 'Reduce complexity while preserving essence' : 'Maintain clear geometric forms'}` :
    `Since image analysis failed, rely entirely on filename patterns and UI conventions`}
