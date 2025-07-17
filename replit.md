@@ -32,6 +32,8 @@ Preferred communication style: Simple, everyday language.
 - **Modular Rulesets**: 7 JSON-based rule modules for different aspects
 - **Adaptive Prompts**: Context-aware instructions based on filename analysis
 - **Quality Assurance**: Automated validation with critical/warning/info levels
+- **Complexity Analysis**: Real-time quality evaluation with improvement suggestions
+- **Refinement Engine**: AI-powered feedback processing for iterative improvements
 
 ### Database Layer
 - **ORM**: Drizzle ORM for type-safe database operations
@@ -43,10 +45,12 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Features
 1. **Image Upload**: Drag-and-drop interface for image files (max 10MB)
-2. **AI Conversion**: OpenAI Vision API converts images to SVG icons
+2. **AI Conversion**: Anthropic Claude 4.0 Sonnet converts images to SVG icons
 3. **Style Validation**: Automatic validation against Vectra Icon Style Guide
 4. **Export Options**: SVG download, React component generation, clipboard copy
 5. **Preview System**: Multiple size previews (16dp, 20dp, 24dp, 48dp)
+6. **Complexity Analysis**: Real-time quality evaluation with improvement suggestions
+7. **Refinement System**: Interactive feedback processing for iterative improvements
 
 ### UI Components
 - **DropZone**: File upload interface with visual feedback

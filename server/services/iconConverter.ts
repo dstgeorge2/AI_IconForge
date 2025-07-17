@@ -100,16 +100,16 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
     const mediaType = getMediaType(fileName);
     
     // PASS 1: Generate comprehensive prompt with semantic analysis
-    const pass1 = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
+    const pass1Response = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
     
-    console.log('🎯 2-Pass System - Pass 1 Intent:', pass1.semanticIntent);
-    console.log('🎨 2-Pass System - Pass 1 Spec:', pass1.visualSpec);
+    console.log('🎯 2-Pass System - Pass 1 Intent:', pass1Response.pass1.semanticIntent);
+    console.log('🎨 2-Pass System - Pass 1 Spec:', pass1Response.pass1.visualSpec);
     
     // Execute Pass 1 with Anthropic
-    const pass1Response = await anthropic.messages.create({
+    const pass1ClaudeResponse = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR, // "claude-sonnet-4-20250514"
       max_tokens: 3000,
-      system: pass1.prompt,
+      system: pass1Response.prompt,
       messages: [
         {
           role: "user",
@@ -134,7 +134,7 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
     });
 
     // Parse Pass 1 response
-    let pass1Result = await parseClaudeResponse(pass1Response);
+    let pass1Result = await parseClaudeResponse(pass1ClaudeResponse);
     
     // PASS 2: Validate and potentially reprompt
     const validation = validator.validateSVG(pass1Result.svg, pass1Result);
@@ -197,7 +197,7 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
     const complexityAnalysis = complexityAnalyzer.analyzeComplexity(finalResult.svg, finalResult);
     const alternatives = refinementEngine.generateComplexityBasedAlternatives(
       complexityAnalysis.complexity_score, 
-      pass1.semanticIntent
+      pass1Response.pass1.semanticIntent || { filename: fileName.replace(/\.[^/.]+$/, ''), intent: 'generic icon' }
     );
     
     // Convert validation results to legacy format
@@ -220,10 +220,10 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
         fillUsed: finalResult.fillUsed || false,
         validated: finalValidation.isValid,
         conceptualPurpose: finalResult.conceptualPurpose,
-        semanticIntent: pass1.semanticIntent,
+        semanticIntent: pass1Response.pass1.semanticIntent,
         validationSummary: finalValidation.summary,
         originalFilename: fileName,
-        suggestedFilename: pass1.semanticIntent.filename + '.svg'
+        suggestedFilename: pass1Response.pass1.semanticIntent?.filename ? pass1Response.pass1.semanticIntent.filename + '.svg' : fileName.replace(/\.[^/.]+$/, '.svg')
       },
       validationResults: legacyValidation,
       complexityAnalysis: complexityAnalysis,
