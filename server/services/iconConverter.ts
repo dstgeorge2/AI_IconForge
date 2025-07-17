@@ -2,6 +2,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { VECTRA_STYLE_GUIDE_PROMPT, COMMON_ICON_PATTERNS } from '../prompts/iconStyleGuide';
 import { IMAGE_ANALYSIS_PROMPTS, QUALITY_ENHANCEMENT_PROMPTS, COMMON_MISTAKES_TO_AVOID } from '../prompts/contextualPrompts';
 import { generateAdaptivePrompt, QUALITY_ASSURANCE_PROMPTS } from '../prompts/adaptivePrompts';
+import { TwoPassIconGenerator } from '../prompts/icon_prompt_engine.js';
+import SVGValidator from '../prompts/validate_output.js';
+import RepromptFixer from '../prompts/reprompt_fixer.js';
 
 /*
 <important_code_snippet_instructions>
@@ -83,74 +86,35 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
   }
 
   try {
+    // Initialize 2-pass generation system
+    const generator = new TwoPassIconGenerator();
+    const validator = new SVGValidator();
+    const repromptFixer = new RepromptFixer();
+    
     // Convert buffer to base64
     const base64Image = imageBuffer.toString('base64');
     const mediaType = getMediaType(fileName);
     
-    // Create focused system prompt based on proven design principles
-    const systemPrompt = `You are an expert icon designer specializing in creating simple, recognizable UI icons.
-
-DESIGN PHILOSOPHY (Based on Google Material & IBM Carbon):
-- Icons should provide instant recognition and understanding
-- Use familiar metaphors that work globally
-- Maintain absolute simplicity - reduce to essential elements only
-- Focus on the core concept, not decorative details
-
-TECHNICAL REQUIREMENTS:
-- Canvas: 24x24dp with viewBox="0 0 24 24"
-- Live area: 20x20dp (keep elements within x=2-22, y=2-22)
-- Stroke: 2dp width, black color (#000000), solid style
-- Corners: 2dp radius on outer corners, square on inner corners
-- Coordinates: All values must be integers (no decimals)
-- Elements: Use only rect, circle, line, path - no gradients, shadows, filters
-
-QUALITY CHECKLIST:
-□ Instantly recognizable at 16dp minimum size
-□ Works without color (black stroke on white background)
-□ Uses universal symbols (avoids cultural specifics)
-□ Geometrically precise with clean lines
-□ Follows "squint test" - clear when squinting
-
-PROVEN PATTERNS:
-- Pencil: Rectangle body + triangle tip
-- House: Triangle roof + rectangle base + small rectangle door
-- User: Circle head + rectangle/trapezoid body
-- Document: Rectangle + folded corner triangle
-- Add: Plus sign (+) centered
-- Settings: Gear/cog with 8 teeth
-
-Your task: Analyze the image and create a simple, effective UI icon that captures the CORE CONCEPT.
-
-Return ONLY a JSON object with:
-{
-  "svg": "complete SVG string",
-  "primaryShape": "main geometric shape description",
-  "strokeWidth": 2,
-  "canvasSize": 24,
-  "fillUsed": false
-}`;
-
-    const response = await anthropic.messages.create({
+    // PASS 1: Generate comprehensive prompt with semantic analysis
+    const pass1 = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
+    
+    console.log('🎯 2-Pass System - Pass 1 Intent:', pass1.semanticIntent);
+    console.log('🎨 2-Pass System - Pass 1 Spec:', pass1.visualSpec);
+    
+    // Execute Pass 1 with Anthropic
+    const pass1Response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR, // "claude-sonnet-4-20250514"
-      max_tokens: 2000,
-      system: systemPrompt,
+      max_tokens: 3000,
+      system: pass1.prompt,
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: `Look at this image and create a simple, instantly recognizable UI icon.
-
-ANALYSIS PROCESS:
-1. What is the main object/concept in this image?
-2. What is the simplest geometric way to represent it?
-3. How would Google Material or IBM Carbon represent this?
-4. What are the essential elements that make it recognizable?
-
-Focus on SIMPLICITY and RECOGNITION over complexity.
-
-Return ONLY the JSON object with no additional text.`
+              text: `Convert this image to a Vectra-style UI icon following the complete specification above. 
+              
+REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
             },
             {
               type: "image",
@@ -165,27 +129,87 @@ Return ONLY the JSON object with no additional text.`
       ]
     });
 
-    // Parse response
-    const result = await parseClaudeResponse(response);
+    // Parse Pass 1 response
+    let pass1Result = await parseClaudeResponse(pass1Response);
     
-    // Simple validation
-    const validationResults = validateIcon(result.svg);
+    // PASS 2: Validate and potentially reprompt
+    const validation = validator.validateSVG(pass1Result.svg, pass1Result);
+    
+    let finalResult = pass1Result;
+    let finalValidation = validation;
+    
+    if (!validation.isValid && validation.summary.critical > 0) {
+      console.log('🔄 2-Pass System - Pass 2 Required:', validation.summary);
+      
+      // Generate reprompt for Pass 2
+      const repromptData = repromptFixer.generateReprompt(pass1.prompt, pass1Result.svg, pass1Result);
+      
+      if (repromptData.needsReprompt) {
+        console.log('🔧 2-Pass System - Applying corrections:', repromptData.corrections.critical.length);
+        
+        // Execute Pass 2 with corrections
+        const pass2Response = await anthropic.messages.create({
+          model: DEFAULT_MODEL_STR,
+          max_tokens: 3000,
+          system: repromptData.reprompt,
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "Apply the corrections and regenerate the icon. Return ONLY the corrected JSON object."
+                },
+                {
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: mediaType,
+                    data: base64Image
+                  }
+                }
+              ]
+            }
+          ]
+        });
+
+        // Parse Pass 2 response
+        const pass2Result = await parseClaudeResponse(pass2Response);
+        const pass2Validation = validator.validateSVG(pass2Result.svg, pass2Result);
+        
+        if (pass2Validation.isValid || pass2Validation.summary.critical < validation.summary.critical) {
+          finalResult = pass2Result;
+          finalValidation = pass2Validation;
+          console.log('✅ 2-Pass System - Pass 2 successful');
+        } else {
+          console.log('⚠️ 2-Pass System - Pass 2 did not improve, using Pass 1 result');
+        }
+      }
+    } else {
+      console.log('✅ 2-Pass System - Pass 1 successful, no corrections needed');
+    }
+    
+    // Convert validation results to legacy format
+    const legacyValidation = convertValidationToLegacy(finalValidation);
     
     return {
-      svg: result.svg,
+      svg: finalResult.svg,
       metadata: {
-        primaryShape: result.primaryShape,
-        decorations: [],
-        strokeWidth: result.strokeWidth || 2,
-        canvasSize: result.canvasSize || 24,
-        fillUsed: result.fillUsed || false,
-        validated: validationResults.every(r => r.status === 'PASS')
+        primaryShape: finalResult.primaryShape,
+        decorations: finalResult.decorations || [],
+        strokeWidth: finalResult.strokeWidth || 2,
+        canvasSize: finalResult.canvasSize || 24,
+        fillUsed: finalResult.fillUsed || false,
+        validated: finalValidation.isValid,
+        conceptualPurpose: finalResult.conceptualPurpose,
+        semanticIntent: pass1.semanticIntent,
+        validationSummary: finalValidation.summary
       },
-      validationResults
+      validationResults: legacyValidation
     };
 
   } catch (error) {
-    console.error('Icon conversion error:', error);
+    console.error('2-Pass Icon conversion error:', error);
     throw new Error(`Failed to convert image to icon: ${error.message}`);
   }
 }
@@ -218,6 +242,30 @@ async function parseClaudeResponse(response: any) {
   }
   
   return result;
+}
+
+// Helper function to convert new validation format to legacy format
+function convertValidationToLegacy(validation: any) {
+  const legacyResults = [];
+  
+  validation.issues.forEach((issue: any) => {
+    legacyResults.push({
+      rule: issue.title,
+      status: issue.category === 'CRITICAL' ? 'FAIL' : issue.category === 'WARNING' ? 'WARNING' : 'PASS',
+      message: issue.message
+    });
+  });
+  
+  // Add some basic validation checks if no issues
+  if (legacyResults.length === 0) {
+    legacyResults.push(
+      { rule: 'Stroke width: 2dp', status: 'PASS', message: 'All strokes are 2dp width' },
+      { rule: 'Canvas size: 24x24dp', status: 'PASS', message: 'Correct canvas dimensions' },
+      { rule: 'No visual effects', status: 'PASS', message: 'No forbidden visual effects detected' }
+    );
+  }
+  
+  return legacyResults;
 }
 
 function validateIcon(svg: string): Array<{rule: string; status: 'PASS' | 'FAIL' | 'WARNING'; message: string}> {

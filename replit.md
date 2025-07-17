@@ -26,12 +26,12 @@ Preferred communication style: Simple, everyday language.
 - **File Processing**: Multer for multipart form data handling
 - **AI Integration**: Anthropic Claude 4.0 Sonnet for image-to-icon conversion
 
-### Simplified Icon Generation System
-- **Direct Analysis**: Focused image-to-icon conversion using proven design patterns
-- **Design Principles**: Based on Google Material and IBM Carbon methodologies
-- **Quality Focus**: Emphasis on instant recognition and simplicity
-- **Proven Patterns**: Built-in knowledge of effective icon metaphors
-- **Fast Processing**: Streamlined approach for better performance
+### 2-Pass Icon Generation System
+- **Pass 1**: Semantic intent analysis and comprehensive prompt generation
+- **Pass 2**: SVG validation and automatic error correction
+- **Modular Rulesets**: 7 JSON-based rule modules for different aspects
+- **Adaptive Prompts**: Context-aware instructions based on filename analysis
+- **Quality Assurance**: Automated validation with critical/warning/info levels
 
 ### Database Layer
 - **ORM**: Drizzle ORM for type-safe database operations
@@ -54,11 +54,12 @@ Preferred communication style: Simple, everyday language.
 - **ValidationReport**: Real-time style guide compliance checking
 - **ExportControls**: Download and copy functionality
 
-### Icon Generation Approach
-- **Simplified Processing**: Direct image analysis without complex validation layers
-- **Design System Integration**: Principles from Google Material and IBM Carbon
-- **Universal Recognition**: Focus on globally understood icon metaphors
-- **Quality Through Simplicity**: Emphasis on essential elements only
+### Advanced Prompt Engineering System
+- **Semantic Intent Parser**: Filename-to-action/object detection
+- **Adaptive Prompts**: Context-aware instructions for different image types
+- **Modular Rulesets**: 7 JSON rule modules covering all design aspects
+- **Quality Assurance**: Pre and post-generation validation checklists
+- **2-Pass Validation**: Automatic error detection and correction system
 
 ### Style Guide Engine
 - **Canvas**: 24x24dp with 20x20dp live area
