@@ -19,6 +19,7 @@ interface ConversionResult {
 export default function IconForge() {
   const [generatedIcon, setGeneratedIcon] = useState<ConversionResult | null>(null);
   const [validationResults, setValidationResults] = useState<ValidationRule[]>([]);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const { toast } = useToast();
 
   const convertMutation = useMutation({
@@ -32,9 +33,13 @@ export default function IconForge() {
     onSuccess: (data: ConversionResult) => {
       setGeneratedIcon(data);
       setValidationResults(data.validationResults);
+      
+      const isPlaceholder = data.metadata.primaryShape.includes('fallback');
       toast({ 
-        title: "Icon generated successfully",
-        description: `Generated ${data.metadata.primaryShape} icon from ${data.metadata.strokeWidth}dp stroke`
+        title: isPlaceholder ? "Placeholder icon generated" : "Icon generated successfully",
+        description: isPlaceholder 
+          ? "Using placeholder icon - add OpenAI API key for real AI conversion"
+          : `Generated ${data.metadata.primaryShape} icon from ${data.metadata.strokeWidth}dp stroke`
       });
     },
     onError: (error: Error) => {
@@ -56,8 +61,38 @@ export default function IconForge() {
       return;
     }
     
+    // Create preview of uploaded image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setUploadedImage(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    
     convertMutation.mutate(file);
   };
+
+  const UploadedImagePreview = () => (
+    <div className="brutal-container">
+      <div className="brutal-header">
+        <h2 className="font-bold text-sm uppercase">Uploaded Image</h2>
+      </div>
+      <div className="p-4">
+        {uploadedImage ? (
+          <div className="border-2 border-black bg-gray-50 h-40 flex items-center justify-center">
+            <img 
+              src={uploadedImage} 
+              alt="Uploaded for conversion" 
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-gray-400 bg-gray-50 h-40 flex items-center justify-center">
+            <span className="text-xs text-gray-400">NO IMAGE UPLOADED</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   const ProcessingStatus = () => (
     <div className="brutal-container">
@@ -165,6 +200,8 @@ export default function IconForge() {
 
           {/* Right Column: Preview & Output */}
           <div className="space-y-6">
+            <UploadedImagePreview />
+            
             <IconPreview 
               svg={generatedIcon?.svg || null}
               metadata={generatedIcon?.metadata}

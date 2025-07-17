@@ -15,10 +15,14 @@ export default function IconPreview({ svg, metadata }: IconPreviewProps) {
     { size: '48', display: '48DP', width: 'w-12', height: 'h-12' }
   ];
 
+  const isPlaceholder = metadata?.primaryShape?.includes('fallback');
+
   return (
     <div className="brutal-container">
       <div className="brutal-header">
-        <h2 className="font-bold text-sm uppercase">Generated Icon</h2>
+        <h2 className="font-bold text-sm uppercase">
+          Generated Icon {isPlaceholder && '(PLACEHOLDER)'}
+        </h2>
       </div>
       
       <div className="p-8">
@@ -71,6 +75,12 @@ export default function IconPreview({ svg, metadata }: IconPreviewProps) {
             <div>Canvas Size: {metadata.canvasSize}x{metadata.canvasSize}dp</div>
             <div>Fill Used: {metadata.fillUsed ? 'Yes' : 'No'}</div>
             <div>Validated: {metadata.validated ? 'Yes' : 'No'}</div>
+            {isPlaceholder && (
+              <div className="mt-2 pt-2 border-t border-gray-300">
+                <div className="font-bold text-red-600 uppercase">⚠ PLACEHOLDER MODE</div>
+                <div className="text-red-600">Add OpenAI API key for real image analysis</div>
+              </div>
+            )}
           </div>
         )}
       </div>
