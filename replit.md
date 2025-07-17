@@ -10,16 +10,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **Intelligent Prompting System** (2025-01-17): Implemented advanced multi-modal analysis that combines:
+- **Simplified Two-Variant System** (2025-01-17): Streamlined from 4 to 2 focused variants:
+  - **Image-Based**: Enhanced visual reconstruction with better tool recognition (pencils, brushes, etc.)
+  - **Common UI**: Standard UI metaphors from Material Design, Carbon, and FontAwesome
+  - Removed filename-based variant (often produces garbage) and blended variant
+- **Enhanced Visual Reading** (2025-01-17): Improved image-based generation:
+  - Better tool recognition for pencils, brushes, stylus with characteristic features
+  - Geometric interpretation that preserves essential visual metaphors
+  - Optical balance and proportional fidelity from original images
+- **Intelligent Prompting System** (2025-01-17): Advanced multi-modal analysis combining:
   - Filename semantic analysis for detecting actions, objects, and contextual categories
   - Image vision analysis for identifying visual elements, composition, and complexity
   - Common UI pattern matching against established icon conventions
   - Enhanced prompt generation bridging filename intent with visual analysis
-- **Icon Refinement System** (2025-01-17): Added comprehensive UI for iterative icon refinement with 3 methods:
-  - UI controls for stroke weight, style variation, and element count
-  - Custom prompt input for specific modifications
-  - Preset refinements (geometric, friendly, minimal, detailed, accessibility-focused)
-- **Download Filename Fix** (2025-01-17): Fixed SVG download to use original image filename instead of generic "icon.svg"
 
 ## System Architecture
 

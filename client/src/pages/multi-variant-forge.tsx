@@ -63,7 +63,7 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
 
   const getVariantLabel = (type: string) => {
     switch (type) {
-      case 'one-to-one': return '1:1 Image Attempt';
+      case 'one-to-one': return 'Image-Based';
       case 'filename-based': return 'File Name Based';
       case 'common-ui': return 'Common UI Match';
       case 'blended': return 'Blended Logic';
@@ -73,7 +73,7 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
 
   const getVariantDescription = (type: string) => {
     switch (type) {
-      case 'one-to-one': return 'Recreated visually from image';
+      case 'one-to-one': return 'Recreated from visual analysis';
       case 'filename-based': return 'Based on parsed file name';
       case 'common-ui': return 'Standard UI metaphor';
       case 'blended': return 'Smart fusion of all inputs';
@@ -203,7 +203,10 @@ export default function MultiVariantForge() {
   const handleDownloadAll = () => {
     if (!multiVariantResult) return;
     
-    Object.entries(multiVariantResult.variants).forEach(([type, variant]) => {
+    const activeVariants = ['one-to-one', 'common-ui'];
+    
+    activeVariants.forEach(type => {
+      const variant = multiVariantResult.variants[type];
       const blob = new Blob([variant.svg], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -217,7 +220,7 @@ export default function MultiVariantForge() {
     
     toast({
       title: 'All icons downloaded!',
-      description: 'Downloaded 4 SVG variants'
+      description: 'Downloaded 2 SVG variants'
     });
   };
 
@@ -228,10 +231,10 @@ export default function MultiVariantForge() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-mono font-bold text-black mb-2">
-              Multi-Variant Icon Forge
+              Icon Forge
             </h1>
             <p className="text-lg text-gray-600 font-mono">
-              Generate 4 distinct but related UI icons using different logic approaches
+              Generate clean UI icons from uploaded images using intelligent analysis
             </p>
           </div>
 
@@ -240,7 +243,7 @@ export default function MultiVariantForge() {
             <CardHeader>
               <CardTitle className="font-mono">Upload Image</CardTitle>
               <CardDescription className="font-mono">
-                Upload an image to generate 4 icon variants using different approaches
+                Upload an image to generate clean UI icons using intelligent analysis
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -281,10 +284,10 @@ export default function MultiVariantForge() {
                     {generateMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating 4 variants...
+                        Generating icons...
                       </>
                     ) : (
-                      'Generate 4 Icon Variants'
+                      'Generate Icons'
                     )}
                   </Button>
                 </div>
@@ -315,22 +318,14 @@ export default function MultiVariantForge() {
               </CardHeader>
               <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-4 mb-6">
-                    <TabsTrigger value="one-to-one" className="font-mono text-xs">
-                      <Image className="w-4 h-4 mr-1" />
-                      1:1 Image
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="one-to-one" className="font-mono text-sm">
+                      <Image className="w-4 h-4 mr-2" />
+                      Image-Based
                     </TabsTrigger>
-                    <TabsTrigger value="filename-based" className="font-mono text-xs">
-                      <FileText className="w-4 h-4 mr-1" />
-                      File Name
-                    </TabsTrigger>
-                    <TabsTrigger value="common-ui" className="font-mono text-xs">
-                      <Layers className="w-4 h-4 mr-1" />
+                    <TabsTrigger value="common-ui" className="font-mono text-sm">
+                      <Layers className="w-4 h-4 mr-2" />
                       Common UI
-                    </TabsTrigger>
-                    <TabsTrigger value="blended" className="font-mono text-xs">
-                      <Blend className="w-4 h-4 mr-1" />
-                      Blended
                     </TabsTrigger>
                   </TabsList>
 
@@ -342,26 +337,10 @@ export default function MultiVariantForge() {
                     />
                   </TabsContent>
 
-                  <TabsContent value="filename-based">
-                    <VariantDisplay
-                      variant={multiVariantResult.variants['filename-based']}
-                      variantType="filename-based"
-                      fileName={multiVariantResult.originalImageName}
-                    />
-                  </TabsContent>
-
                   <TabsContent value="common-ui">
                     <VariantDisplay
                       variant={multiVariantResult.variants['common-ui']}
                       variantType="common-ui"
-                      fileName={multiVariantResult.originalImageName}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="blended">
-                    <VariantDisplay
-                      variant={multiVariantResult.variants.blended}
-                      variantType="blended"
                       fileName={multiVariantResult.originalImageName}
                     />
                   </TabsContent>

@@ -27,30 +27,41 @@ export interface VariantGenerationContext {
 // Generate 1:1 Image Attempt - Reconstruct the uploaded image as closely as possible
 export async function generateOneToOneVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
   const prompt = `
-# TAB 1: 1:1 IMAGE ATTEMPT
+# IMAGE-BASED ICON GENERATION
 
 ## OBJECTIVE
-Reconstruct the uploaded image as closely as possible while respecting stroke and grid rules.
+Analyze the uploaded image and reconstruct it as a clean UI icon while preserving the essential visual characteristics.
+
+## VISUAL RECONSTRUCTION APPROACH
+1. **Shape Recognition**: Identify the primary shapes and forms in the image
+2. **Gesture Analysis**: Recognize tool-like objects (pencils, brushes, etc.) and their characteristic features
+3. **Proportional Fidelity**: Maintain the spatial relationships and proportions from the original
+4. **Detail Simplification**: Reduce complex details to essential geometric forms
+
+## ENHANCED VISUAL READING
+- **Tool Recognition**: If the image shows a tool (pencil, brush, stylus), preserve its iconic features:
+  - Pencil: Tapered tip, cylindrical shaft, distinctive proportions
+  - Brush: Bristles, ferrule, handle
+  - Stylus: Clean lines, precision tip
+- **Geometric Interpretation**: Convert organic shapes to clean geometric equivalents
+- **Optical Balance**: Ensure the icon feels balanced and properly weighted
 
 ## CONSTRAINTS
 - 24x24dp canvas, 20x20dp live area
 - 2dp black stroke, no fill
-- Preserve the visual layout and proportions from the original image
-- If image is blurry or unclear, note low confidence
+- Preserve essential visual metaphors from the original image
+- Focus on immediate visual recognition
 
-## GENERATION STRATEGY
-Based on the intelligent analysis:
-${context.intelligentPrompt.enhancedPrompt}
+## INTELLIGENT CONTEXT
+${context.intelligentPrompt.imageAnalysis.primarySubject !== 'unknown' ? 
+  `Image shows: ${context.intelligentPrompt.imageAnalysis.primarySubject}
+Key features: ${context.intelligentPrompt.imageAnalysis.recognizableFeatures.join(', ')}
+Visual elements: ${context.intelligentPrompt.imageAnalysis.visualElements.join(', ')}` :
+  'Image analysis limited - focus on extracting basic shapes and forms'}
 
-## SPECIFIC FOCUS
-- Maintain visual fidelity to the original image
-- Preserve recognizable shapes and proportions
-- Adapt complex details to work within stroke constraints
-- Keep the same overall composition and balance
+Generate an SVG icon that captures the essential visual character of the uploaded image as a clean, recognizable UI icon.
 
-Generate an SVG icon that recreates the visual appearance of the uploaded image as closely as possible within the Vectra style guide constraints.
-
-Include a brief explanation of what visual elements you preserved and any adaptations made.
+Explain what key visual elements you preserved and how you simplified complex features.
 `;
 
   const response = await anthropic.messages.create({
@@ -344,14 +355,12 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
     intelligentPrompt
   };
   
-  console.log('🎯 Multi-Variant Generation - Generating 4 variants...');
+  console.log('🎯 Multi-Variant Generation - Generating 2 variants...');
   
-  // Generate all 4 variants in parallel
-  const [oneToOne, filenameBased, commonUI, blended] = await Promise.all([
+  // Generate only the two key variants in parallel
+  const [oneToOne, commonUI] = await Promise.all([
     generateOneToOneVariant(context),
-    generateFileNameBasedVariant(context),
-    generateCommonUIVariant(context),
-    generateBlendedVariant(context)
+    generateCommonUIVariant(context)
   ]);
   
   console.log('✅ Multi-Variant Generation - All variants generated successfully');
@@ -361,9 +370,9 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
     originalImageName: fileName,
     variants: {
       'one-to-one': oneToOne,
-      'filename-based': filenameBased,
+      'filename-based': oneToOne, // Keep for compatibility but use same as one-to-one
       'common-ui': commonUI,
-      'blended': blended
+      'blended': commonUI // Keep for compatibility but use same as common-ui
     }
   };
 }
