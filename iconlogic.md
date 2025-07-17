@@ -205,12 +205,33 @@ Input Image + Filename
 - **32dp**: Larger interfaces, improved accessibility
 - **48dp**: Display type, headlines, large screens
 
+### Advanced SVG Scaling Technology
+**Dynamic ViewBox Preservation**:
+- Extracts original viewBox dimensions from generated SVG
+- Maintains proportional relationships while scaling display size
+- Preserves design intent across all preview sizes
+- Handles various SVG coordinate systems (24x24, 32x32, etc.)
+
+**Scaling Algorithm**:
+```javascript
+// Extract original viewBox coordinates
+const viewBoxMatch = svg.match(/viewBox="([^"]+)"/);
+const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
+
+// Scale display size while preserving proportions
+const scaledSVG = svg.replace(
+  /<svg[^>]*>/,
+  `<svg width="${targetSize}" height="${targetSize}" viewBox="${viewBox}">`
+);
+```
+
 ### Preview Logic
 ```
 For each generated icon:
   For each size [16, 20, 24, 32, 48]:
-    Render icon at exact dp size
-    Apply padding (size + 4px container)
+    Extract original viewBox coordinates
+    Scale display dimensions to exact dp size
+    Apply container padding (size + 4px)
     Test visual clarity and recognition
     Validate stroke weight visibility
     Check proportional balance
@@ -221,41 +242,40 @@ For each generated icon:
 - **Stroke Weight**: Must remain visible at smallest size
 - **Detail Preservation**: Essential features visible across all sizes
 - **Optical Correction**: Adjustments for better small-size rendering
+- **Proportional Integrity**: Maintains design relationships at all scales
 
 ## Revision Interface System
 
-### Computer Vision Description
-**Purpose**: Provide users with simple language descriptions of what the AI "sees" in their image
+### User-Centric Revision Experience
+**Purpose**: Enable users to refine and improve generated icons through intuitive feedback mechanisms
 
-**Components**:
-- **Main Subject**: Primary object or concept identified
-- **Key Features**: Distinctive characteristics detected
-- **Visual Elements**: Shapes, lines, textures, composition
-- **Complexity Level**: Simple, moderate, or complex
-
-**Language Guidelines**:
-- Use everyday language, avoid technical terms
-- Focus on visual elements users can recognize
-- Provide actionable insights for refinement
-- Maintain encouraging, helpful tone
+**Design Philosophy**:
+- **Simplicity First**: Clean, uncluttered interface focused on essential controls
+- **User Empowerment**: Put revision power directly in user's hands
+- **Visual Feedback**: Real-time preview of changes and improvements
+- **Iterative Refinement**: Support multiple revision cycles for perfect results
 
 ### Reference Icon Attachment
 **Purpose**: Allow users to provide reference icons for iterative improvement
 
 **Implementation**:
-- Drag-and-drop interface for icon uploads
-- Visual comparison with generated icons
-- Style extraction from reference images
-- Prompt enhancement based on reference analysis
+- **Drag-and-Drop Interface**: Intuitive file upload with visual feedback
+- **File Validation**: Supports PNG, JPG, SVG, and other image formats
+- **Visual Confirmation**: Clear indication when reference is successfully attached
+- **Style Analysis**: AI extracts visual characteristics from reference images
+- **Prompt Enhancement**: Reference analysis influences regeneration prompts
+- **One-Click Removal**: Easy reference clearing for trying different approaches
 
 ### Custom Prompt Editing
 **Purpose**: Enable users to specify refinements in natural language
 
 **Features**:
-- Free-form text input for modification requests
-- Context-aware prompt enhancement
-- Integration with existing design system constraints
-- Regeneration with user-specified changes
+- **Natural Language Input**: Free-form text for modification requests
+- **Character Limit**: 200 characters for focused, actionable feedback
+- **Context Integration**: User prompts weighted at 80% priority in regeneration
+- **Design System Awareness**: Maintains compliance while applying user changes
+- **Prompt Suggestions**: Helper text guides users toward effective feedback
+- **Real-time Validation**: Immediate feedback on prompt effectiveness
 
 ## Two-Pass Refinement System
 
@@ -336,6 +356,8 @@ For each generated icon:
 3. **Poor Quality Images**: Enhancement and interpretation
 4. **Ambiguous Filenames**: Visual analysis priority
 5. **Generation Failures**: Retry with simplified prompts
+6. **Image Format Mismatches**: Base64 encoding validation and correction
+7. **UI Rendering Issues**: React key management for proper updates
 
 ### Fallback Strategies
 - **Visual Priority**: When filename is unclear, prioritize image analysis
@@ -343,6 +365,15 @@ For each generated icon:
 - **Simplification**: Reduce complexity while preserving meaning
 - **Default Metaphors**: Fall back to universal UI conventions
 - **User Guidance**: Provide clear revision suggestions
+- **Format Validation**: Ensure proper image encoding before AI processing
+- **Component Re-rendering**: Force React updates with unique keys when revised
+
+### React State Management
+**Revision Update Strategy**:
+- **Unique Keys**: Component keys include variant type, ID, and revision status
+- **State Immutability**: Complete state replacement ensures UI updates
+- **Debugging Support**: Console logging for troubleshooting state changes
+- **User Feedback**: Clear success/error messages for revision attempts
 
 ## Performance Optimization
 
@@ -363,6 +394,37 @@ For each generated icon:
 - Single variant generation: <8 seconds
 - Complete 5-variant generation: <30 seconds
 - Validation and storage: <3 seconds
+- Icon revision: <25 seconds (80% user input weighting)
+- UI state updates: <100ms (immediate visual feedback)
+
+## Recent Updates & Improvements
+
+### January 2025 Enhancements
+1. **Revision Interface Streamlining**:
+   - Removed computer vision description section for cleaner UX
+   - Maintained reference icon attachment and custom prompt editing
+   - Improved visual hierarchy and user focus
+
+2. **SVG Scaling Technology**:
+   - Implemented dynamic viewBox preservation across all preview sizes
+   - Fixed scaling issues where icons didn't properly fill containers
+   - Enhanced proportional integrity at 16dp, 20dp, 24dp, 32dp, and 48dp
+
+3. **React State Management**:
+   - Added unique component keys for proper re-rendering after revisions
+   - Implemented debugging support for troubleshooting state updates
+   - Fixed issue where revised icons weren't replacing originals in UI
+
+4. **User Experience Improvements**:
+   - Streamlined revision workflow with 80% user input weighting
+   - Enhanced drag-and-drop reference icon attachment
+   - Improved error handling and user feedback systems
+
+### Technical Debt Addressed
+- **Image Format Validation**: Fixed base64 encoding mismatches with media types
+- **Component Re-rendering**: Resolved React key issues causing stale UI states
+- **SVG Scaling**: Corrected proportional display across all standard sizes
+- **State Management**: Enhanced immutability and update patterns
 
 ## Future Enhancement Opportunities
 
@@ -372,13 +434,17 @@ For each generated icon:
 3. **Icon Families**: Consistent style across related icons
 4. **Advanced Validation**: Machine learning quality assessment
 5. **Export Formats**: PNG, PDF, React components, Vue components
+6. **History Stack**: Track revision iterations and allow rollback
+7. **Smart Suggestions**: AI-powered improvement recommendations
 
 ### Integration Possibilities
 1. **Design Tools**: Figma, Sketch, Adobe XD plugins
 2. **Development Workflows**: CI/CD integration
 3. **Asset Management**: Design system integration
 4. **API Access**: Programmatic icon generation
-5. **Collaboration**: Team sharing and review features
+5. **Collaboration**: Team sharing and revision workflows
+6. **Version Control**: Git-like branching for icon iterations
+7. **Component Libraries**: Direct integration with React/Vue component systemsview features
 
 ## Conclusion
 
