@@ -78,7 +78,7 @@ export default function IconPreview({ svg, metadata }: IconPreviewProps) {
             {isPlaceholder && (
               <div className="mt-2 pt-2 border-t border-gray-300">
                 <div className="font-bold text-red-600 uppercase">⚠ PLACEHOLDER MODE</div>
-                <div className="text-red-600">Add OpenAI API key for real image analysis</div>
+                <div className="text-red-600">Add Anthropic API key for real image analysis</div>
               </div>
             )}
           </div>

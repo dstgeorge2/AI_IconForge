@@ -38,7 +38,7 @@ export default function IconForge() {
       toast({ 
         title: isPlaceholder ? "Placeholder icon generated" : "Icon generated successfully",
         description: isPlaceholder 
-          ? "Using placeholder icon - add OpenAI API key for real AI conversion"
+          ? "Using placeholder icon - add Anthropic API key for real AI conversion"
           : `Generated ${data.metadata.primaryShape} icon from ${data.metadata.strokeWidth}dp stroke`
       });
     },
@@ -226,7 +226,7 @@ export default function IconForge() {
             ICON FORGE v1.0 • AI-POWERED ICON GENERATION
           </div>
           <div className="text-xs mt-2 md:mt-0">
-            POWERED BY GPT-4O VISION • VECTRA STYLE GUIDE
+            POWERED BY CLAUDE-4 VISION • VECTRA STYLE GUIDE
           </div>
         </div>
       </footer>
