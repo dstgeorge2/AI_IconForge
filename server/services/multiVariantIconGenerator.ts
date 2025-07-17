@@ -206,7 +206,7 @@ export async function generateMaterialVariant(context: VariantGenerationContext)
 # MATERIAL DESIGN GENERATION
 
 ## OBJECTIVE
-Create an icon following Google Material Design principles, using the uploaded image as visual guidance.
+Create an icon following Google Material Design principles with proper variable font attributes, using the uploaded image as visual guidance.
 
 ## MATERIAL DESIGN SPECIFICATIONS
 - **Grid System**: 24x24dp with 20x20dp live area, 2dp padding
@@ -216,6 +216,12 @@ Create an icon following Google Material Design principles, using the uploaded i
 - **Stroke Terminals**: Squared terminals, no rounded caps
 - **Style**: Geometric, consistent, modern, friendly
 
+## MATERIAL SYMBOLS VARIABLE FONT ATTRIBUTES
+- **Weight**: 400 (regular weight for 24dp icons - avoid 100 weight at standard size)
+- **Fill**: 0 (outlined style for base state, can transition to 1 for filled/active states)
+- **Grade**: 0 (default for dark icons on light backgrounds, use -25 for light icons on dark backgrounds)
+- **Optical Size**: 24dp (optimized stroke weight and spacing for this viewing size)
+
 ## VISUAL REFERENCE
 - **Image Content**: ${imageAnalysis.primarySubject}
 - **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
@@ -224,21 +230,25 @@ Create an icon following Google Material Design principles, using the uploaded i
 ## MATERIAL DESIGN PRINCIPLES
 1. **Clarity**: Communicate intent clearly and instantly
 2. **Simplicity**: Use fewest possible strokes for meaning
-3. **Consistency**: Match Material Design system tokens
+3. **Consistency**: Match Material Design system tokens with proper variable font attributes
 4. **Recognizability**: Favor familiar Material metaphors
-5. **Scalability**: Render cleanly at 16dp, 20dp, 24dp, 32dp, 48dp
+5. **Scalability**: Render cleanly at 16dp, 20dp, 24dp, 32dp, 48dp with proper optical sizing
 6. **Function over Form**: Serve interface function, not decoration
+7. **State Management**: Use fill attribute for state transitions (0=inactive, 1=active)
 
 ## GENERATION REQUIREMENTS
 - Apply Material Design grid and keyline shapes
-- Use consistent 2dp stroke weight
+- Use consistent 2dp stroke weight (400 regular weight)
 - Ensure optical centering and balance
+- Use outlined style (fill=0) for base state
+- Maintain grade 0 for standard contrast
+- Optimize for 24dp optical size
 - Two-pass refinement for Material Design compliance
 - Test readability at multiple sizes
 
-Generate a clean Material Design icon that uses the uploaded image as visual reference while strictly following Google's design system.
+Generate a clean Material Design icon that uses the uploaded image as visual reference while strictly following Google's design system and variable font attribute specifications.
 
-Explain which Material Design principles guided your design and how you adapted the image content.
+Explain which Material Design principles guided your design, how you applied the variable font attributes (weight=400, fill=0, grade=0, optical size=24dp), and how you adapted the image content.
 `;
 
   const response = await anthropic.messages.create({
@@ -277,7 +287,16 @@ Explain which Material Design principles guided your design and how you adapted 
       svgCode: result.svg,
       explanation: result.explanation || "Material Design icon following Google's design system.",
       confidence,
-      metadata: { approach: 'material-design', source: 'google-design-system' },
+      metadata: { 
+        approach: 'material-design', 
+        source: 'google-design-system',
+        variableFontAttributes: {
+          weight: 400,
+          fill: 0,
+          grade: 0,
+          opticalSize: 24
+        }
+      },
       createdAt: new Date()
     },
     svg: result.svg,
@@ -780,8 +799,22 @@ async function generateUIIntentVariantFromText(context: VariantGenerationContext
 
 async function generateMaterialVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
   const prompt = `Generate a Google Material Design icon for: "${context.textDescription}". 
-  Follow Material Design specifications: 24x24dp canvas, 20x20dp live area, 2dp stroke weight, geometric shapes.
-  Return valid SVG code and explanation.`;
+
+## MATERIAL DESIGN SPECIFICATIONS
+- **Grid System**: 24x24dp with 20x20dp live area, 2dp padding
+- **Keyline Shapes**: Square (18dp), Circle (20dp), Vertical rectangle (20x16dp), Horizontal rectangle (16x20dp)
+- **Stroke Weight**: 2dp regular weight (400), consistent throughout
+- **Corner Radius**: 2dp exterior corners, square interior corners
+- **Style**: Geometric, consistent, modern, friendly
+
+## MATERIAL SYMBOLS VARIABLE FONT ATTRIBUTES
+- **Weight**: 400 (regular weight for 24dp icons - avoid 100 weight at standard size)
+- **Fill**: 0 (outlined style for base state, can transition to 1 for filled/active states)
+- **Grade**: 0 (default for dark icons on light backgrounds)
+- **Optical Size**: 24dp (optimized stroke weight and spacing for this viewing size)
+
+Follow Material Design specifications with proper variable font attributes. Use outlined style (fill=0) with 400 weight for 24dp optical size.
+Return valid SVG code and explanation of Material Design compliance.`;
   
   return await generateTextVariant(prompt, context);
 }

@@ -10,10 +10,22 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Text Description Mode** (2025-01-17): Added dual-input functionality with toggle switch:
+  - **Image Mode**: Traditional drag-and-drop image upload with paste support
+  - **Text Mode**: Plain text descriptions for icon generation (e.g., "Shopping cart for e-commerce")
+  - Toggle switch seamlessly switches between input modes
+  - Backend support for both image and text-based icon generation
+  - Same 5-variant output system for both input modes
+- **Enhanced Material Design Integration** (2025-01-17): Integrated official Material Design specifications:
+  - **Variable Font Attributes**: Weight (400), Fill (0), Grade (0), Optical Size (24dp)
+  - **Proper Weight Standards**: 400 regular weight for 24dp icons, avoiding 100 weight at standard size
+  - **Fill State Management**: Outlined style (fill=0) for base state, filled (fill=1) for active states
+  - **Grade Compensation**: Grade 0 for standard contrast, -25 for light icons on dark backgrounds
+  - **Optical Size Optimization**: 24dp optimized stroke weight and spacing for proper scaling
 - **Expanded 5-Variant System** (2025-01-17): Complete redesign with specialized design approaches:
   - **Tab 1: 1:1 Icon** - Based on image vision with enhanced visual reconstruction
   - **Tab 2: UI Intent** - Based on image and filename analysis for semantic understanding
-  - **Tab 3: Material** - Google Material Design + image following strict design system
+  - **Tab 3: Material** - Google Material Design + image following strict design system with variable font attributes
   - **Tab 4: Carbon** - IBM Carbon Design + image with consistent visual language
   - **Tab 5: Pictogram** - IBM Carbon pictogram rules for larger display contexts
 - **Multi-Size Preview System** (2025-01-17): Icons displayed at standard sizes:

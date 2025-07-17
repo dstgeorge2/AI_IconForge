@@ -1,0 +1,109 @@
+Customizing Symbols
+link
+Copy link
+Material Symbols have four adjustable stylistic variable font attributes called axes. An axis is a typographic term referring to the attribute of a symbol that can be altered to create visual variations. 
+
+Each style symbol contains four axes: weight, fill, grade, and optical size.
+
+link
+Copy link
+Weight
+Weight defines the symbol’s stroke weight, with a range of weights between thin (100) and bold (700). Weight can also affect the overall size of the symbol. 
+
+link
+Copy link
+
+pause
+A symbol in a range of weights
+
+link
+Copy link
+400 regular-weight icons used in standard navigation drawer and modal navigation drawer.
+400 regular-weight symbols
+
+link
+Copy link
+Photo gallery using 100 weight icons.
+close
+Don’t
+Don't use the lightest weight for standard-size (24dp) icons. The minimum weight for the size is 200.
+Three side-by-side 24p standard symbols.
+exclamation
+Caution
+Be careful using excessive weight for standard 24dp symbols
+
+link
+Copy link
+Navigation rail with consistent symbol weights.
+check
+Do
+Apply weights consistently
+
+Navigation rail with varying symbol weights.
+close
+Don’t
+Don’t mix different weights
+
+link
+Copy link
+Fill
+Fill gives you the ability to transition from a more outlined style to a reversed or more filled style. 
+
+A fill attribute can be used to convey a state of transition, such as unfilled and filled states. Values range from 0 to 1, with 1 being completely filled. Along with weight, fill is a primary attribute that impacts the overall look of a symbol.
+
+link
+Copy link
+Unfilled icons.
+Unfilled symbols with fill set to 0
+
+Set of filled icons.
+Filled symbols with fill set to 1
+
+link
+Copy link
+
+pause
+Bottom navigation with filled symbols in selected and unselected states
+
+link
+Copy link
+Grade
+Weight and grade affect a symbol’s thickness. Adjustments to grade are more granular than adjustments to weight and have a smaller impact on the size of the symbol.
+
+Grade is also available in some text fonts. Grade levels between text and symbols can be matched for a harmonious visual effect. For example, if the text font has a -25 grade value, the symbols can match it with a suitable value of -25. 
+
+Symbol thickness at grade 0 and at negative grade.
+At grade 0, the thickness of the symbol does not change
+At negative grade, the thickness of the symbol appears lighter
+link
+Copy link
+Grade can also compensate for visual bleed, which is when images can look bigger or smaller depending on the color contrast. To match the apparent icon size, the default grade for a dark icon on a light background is 0, and -25 for a light icon on a dark background.
+
+link
+Copy link
+Button with icon and text in light UI.
+Icon button featuring a 0 default grade symbol in light UI
+
+Button with icon and text in dark UI.
+Icon button featuring a negative grade symbol in dark UI
+
+link
+Copy link
+To make strokes heavier and more emphasized, use positive value grade, such as when representing an active icon state.
+
+Photo icon in active state appearing bolder.
+An icon with active state using positive value grade for emphasis
+
+link
+Copy link
+Optical sizes
+Optical sizes range from 20dp to 48dp.
+
+For the image to look the same at different sizes, the stroke weight (thickness) changes as the icon size scales. Optical size offers a way to automatically adjust the stroke weight when you increase or decrease the symbol size.
+
+Four icons gradually increasing in optical size.
+Four optical sizes, 20dp, 24dp, 40dp, 48dp
+
+link
+Copy link
+Traditionally, icons are resized from a 24dp source vector, resulting in a large scaled icon that’s too heavy compared to the original. With the optical size axis, you can maintain the stroke weight (thickness) as the icon size grows.
