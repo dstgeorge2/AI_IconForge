@@ -56,17 +56,17 @@ export default function IconRefinementPanel({
   // Get available refinement presets
   const { data: presets = {} } = useQuery({
     queryKey: ['/api/refinement-presets'],
-    queryFn: () => apiRequest('/api/refinement-presets')
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/refinement-presets');
+      return response.json();
+    }
   });
 
   // Refinement mutation
   const refinementMutation = useMutation({
     mutationFn: async (refinementData: any) => {
-      return apiRequest('/api/refine-icon', {
-        method: 'POST',
-        body: JSON.stringify(refinementData),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await apiRequest('POST', '/api/refine-icon', refinementData);
+      return response.json();
     },
     onSuccess: (result) => {
       onRefinedIcon(result);
