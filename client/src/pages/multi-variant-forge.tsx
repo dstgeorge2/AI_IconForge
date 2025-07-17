@@ -341,7 +341,7 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
 export default function MultiVariantForge() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [inputMode, setInputMode] = useState<'image' | 'text'>('image');
+  const [promptEnabled, setPromptEnabled] = useState(false);
   const [textDescription, setTextDescription] = useState('');
   const [multiVariantResult, setMultiVariantResult] = useState<MultiVariantIconResponse | null>(null);
   const [activeTab, setActiveTab] = useState('one-to-one');
@@ -483,6 +483,10 @@ export default function MultiVariantForge() {
       } else {
         // Image file mode
         formData.append('image', input);
+        // Add prompt if enabled and has content
+        if (promptEnabled && textDescription.trim()) {
+          formData.append('prompt', textDescription);
+        }
       }
       
       const response = await apiRequest('POST', '/api/generate-multi-variant-icons', formData);
@@ -506,11 +510,11 @@ export default function MultiVariantForge() {
   });
 
   const handleGenerate = () => {
-    if (inputMode === 'image') {
-      if (!selectedFile) return;
+    if (selectedFile) {
+      // Image mode (with optional prompt)
       generateMutation.mutate(selectedFile);
-    } else {
-      if (!textDescription.trim()) return;
+    } else if (promptEnabled && textDescription.trim()) {
+      // Text-only mode
       generateMutation.mutate(textDescription);
     }
   };
@@ -559,33 +563,33 @@ export default function MultiVariantForge() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="font-mono">
-                    {inputMode === 'image' ? 'Upload Image' : 'Describe Icon'}
+                    Icon Generator
                   </CardTitle>
                   <CardDescription className="font-mono">
-                    {inputMode === 'image' 
-                      ? 'Upload an image to generate clean UI icons using intelligent analysis'
-                      : 'Describe the icon you want to create in plain text'
-                    }
+                    Upload an image to generate clean UI icons using intelligent analysis.
+                    {promptEnabled && ' Add a text prompt for enhanced generation.'}
                   </CardDescription>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <label className="text-sm font-mono">Image</label>
+                  <label className="text-sm font-mono">Prompt</label>
                   <Switch
-                    checked={inputMode === 'text'}
+                    checked={promptEnabled}
                     onCheckedChange={(checked) => {
-                      setInputMode(checked ? 'text' : 'image');
-                      setSelectedFile(null);
-                      setImagePreview(null);
-                      setTextDescription('');
-                      setMultiVariantResult(null);
+                      setPromptEnabled(checked);
+                      if (!checked) {
+                        setTextDescription('');
+                      }
                     }}
                   />
-                  <label className="text-sm font-mono">Text</label>
+                  <label className="text-sm font-mono text-gray-500">
+                    {promptEnabled ? 'On' : 'Off'}
+                  </label>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              {inputMode === 'image' ? (
+              <div className="space-y-4">
+                {/* Image Upload Section */}
                 <div
                   {...getRootProps()}
                   className={`border-2 border-dashed border-black p-8 text-center cursor-pointer transition-colors ${
@@ -637,24 +641,38 @@ export default function MultiVariantForge() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <textarea
-                    value={textDescription}
-                    onChange={(e) => setTextDescription(e.target.value)}
-                    placeholder="Describe the icon you want to create... (e.g., 'A pencil for editing content', 'Shopping cart for e-commerce', 'Lock icon for security')"
-                    className="w-full p-4 border-2 border-black rounded text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={4}
-                    maxLength={500}
-                  />
-                  <div className="flex justify-between items-center text-xs text-gray-500 font-mono">
-                    <span>Be specific about the icon's purpose and context</span>
-                    <span>{textDescription.length}/500 characters</span>
+
+                {/* Prompt Section - Only shown when toggle is on */}
+                {promptEnabled && (
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <h3 className="font-mono text-sm font-medium mb-2">Additional Prompt</h3>
+                      <textarea
+                        value={textDescription}
+                        onChange={(e) => setTextDescription(e.target.value)}
+                        placeholder={selectedFile 
+                          ? "Add context or specific requirements for the icon generation... (e.g., 'Make it more modern', 'Focus on the editing aspect', 'Use minimal style')"
+                          : "Describe the icon you want to create... (e.g., 'A pencil for editing content', 'Shopping cart for e-commerce', 'Lock icon for security')"
+                        }
+                        className="w-full p-4 border-2 border-black rounded text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={3}
+                        maxLength={500}
+                      />
+                      <div className="flex justify-between items-center text-xs text-gray-500 font-mono mt-2">
+                        <span>
+                          {selectedFile 
+                            ? 'Enhance image analysis with additional context' 
+                            : 'Be specific about the icon\'s purpose and context'
+                          }
+                        </span>
+                        <span>{textDescription.length}/500 characters</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
               
-              {((inputMode === 'image' && selectedFile) || (inputMode === 'text' && textDescription.trim())) && (
+              {(selectedFile || (promptEnabled && textDescription.trim())) && (
                 <div className="mt-4 flex justify-center">
                   <Button
                     onClick={handleGenerate}

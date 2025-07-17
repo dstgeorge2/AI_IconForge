@@ -109,7 +109,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         const base64Image = req.file.buffer.toString('base64');
         originalName = req.file.originalname;
-        multiVariantResult = await generateMultiVariantIcons(originalName, base64Image);
+        const additionalPrompt = req.body.prompt || '';
+        multiVariantResult = await generateMultiVariantIcons(originalName, base64Image, additionalPrompt);
       }
       
       // Create main conversion record
@@ -196,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             confidence: storedVariants[3].confidence,
             metadata: storedVariants[3].metadata
           },
-          'pictogram': {
+          'filled': {
             id: storedVariants[4].id,
             svg: storedVariants[4].svgCode,
             explanation: storedVariants[4].explanation,

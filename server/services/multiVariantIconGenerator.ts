@@ -973,11 +973,11 @@ The icon must:
 }
 
 // Generate all 5 variants from image
-export async function generateMultiVariantIcons(fileName: string, base64Image: string): Promise<MultiVariantIconResponse> {
+export async function generateMultiVariantIcons(fileName: string, base64Image: string, additionalPrompt: string = ''): Promise<MultiVariantIconResponse> {
   console.log('🎯 Multi-Variant Generation - Starting intelligent analysis...');
   
   // Generate intelligent prompt analysis
-  const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image);
+  const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image, additionalPrompt);
   
   const context: VariantGenerationContext = {
     fileName,

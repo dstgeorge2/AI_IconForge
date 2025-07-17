@@ -49,6 +49,7 @@ export interface IntelligentPromptResult {
   patternMatches: CommonPatternMatch[];
   enhancedPrompt: string;
   contextualInstructions: string;
+  additionalPrompt?: string;
 }
 
 // Common UI icon patterns database
@@ -487,7 +488,8 @@ function getFallbackPattern(category: string, action: string): CommonPatternMatc
 export function generateEnhancedPrompt(
   semanticAnalysis: SemanticAnalysis,
   imageAnalysis: ImageVisionAnalysis,
-  patternMatches: CommonPatternMatch[]
+  patternMatches: CommonPatternMatch[],
+  additionalPrompt: string = ''
 ): string {
   const topPatterns = patternMatches.slice(0, 3);
   const visionWorked = imageAnalysis.primarySubject !== 'unknown';
@@ -568,6 +570,8 @@ Based on the combined analysis, create an SVG icon that:
 - Validate universal recognition across cultures
 
 **CRITICAL SUCCESS FACTOR**: The icon MUST be immediately recognizable as representing "${semanticAnalysis.detectedAction}" and "${semanticAnalysis.detectedObject}" from the filename, regardless of image content.
+
+${additionalPrompt ? `\n## ADDITIONAL USER REQUIREMENTS\n${additionalPrompt}\n\n**IMPORTANT**: Incorporate these user requirements while maintaining all the above constraints and style guidelines.` : ''}
 
 Generate a clean, geometric SVG icon that successfully represents the semantic intent from the filename.
 `;
@@ -676,7 +680,7 @@ ${complexityInstructions[imageAnalysis.complexity]}
 }
 
 // Main intelligent prompting function
-export async function generateIntelligentPrompt(filename: string, imageBase64: string, mediaType: string = 'image/jpeg'): Promise<IntelligentPromptResult> {
+export async function generateIntelligentPrompt(filename: string, imageBase64: string, mediaType: string = 'image/jpeg', additionalPrompt: string = ''): Promise<IntelligentPromptResult> {
   // Step 1: Analyze filename semantics
   const semanticAnalysis = analyzeFilename(filename);
   
@@ -687,7 +691,7 @@ export async function generateIntelligentPrompt(filename: string, imageBase64: s
   const patternMatches = findPatternMatches(semanticAnalysis, imageAnalysis);
   
   // Step 4: Generate enhanced prompt
-  const enhancedPrompt = generateEnhancedPrompt(semanticAnalysis, imageAnalysis, patternMatches);
+  const enhancedPrompt = generateEnhancedPrompt(semanticAnalysis, imageAnalysis, patternMatches, additionalPrompt);
   
   // Step 5: Generate contextual instructions
   const contextualInstructions = generateContextualInstructions(semanticAnalysis, imageAnalysis);
@@ -697,6 +701,7 @@ export async function generateIntelligentPrompt(filename: string, imageBase64: s
     imageAnalysis,
     patternMatches,
     enhancedPrompt,
-    contextualInstructions
+    contextualInstructions,
+    additionalPrompt
   };
 }
