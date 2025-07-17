@@ -1,0 +1,226 @@
+Here’s a complete style guide rewritten for developers and product builders — in plain English, JavaScript logic, and app development mindset. This is structured so you can build and enforce it in code.
+
+⸻
+
+🧭 Vectra Icon System: Developer-Ready Style Guide
+
+This guide is made for app builders, not just designers — it’s written so you can encode the icon logic, validate icons programmatically, and generate them dynamically.
+
+⸻
+
+🔧 1. STROKES
+
+✅ Plain Rules
+	•	Use 2dp stroke width on all shapes
+	•	Lines must be solid, black (#000000)
+	•	Rounded corners on outer shapes (2dp)
+	•	Square corners on interior joins unless clarity is improved with round
+	•	Stroke ends must be squared or clipped at 45°
+
+💡 Dev Logic
+
+const STROKE_WIDTH = 2;
+const STROKE_COLOR = '#000000';
+const OUTER_CORNER_RADIUS = 2;
+const INTERIOR_CORNER_STYLE = 'square';
+
+
+⸻
+
+🧱 2. CANVAS & GRID
+
+✅ Plain Rules
+	•	Icons sit in a 24 x 24dp canvas
+	•	Live area is 20 x 20dp (centered)
+	•	Must leave 2dp padding on all sides
+	•	All points snap to whole pixels (no subpixels)
+
+💡 Dev Logic
+
+const CANVAS_SIZE = 24;
+const LIVE_AREA = 20;
+const PADDING = (CANVAS_SIZE - LIVE_AREA) / 2; // = 2dp
+function snapToGrid(val) {
+  return Math.round(val); // no decimal
+}
+
+
+⸻
+
+🧠 3. SHAPE CONSTRUCTION
+
+✅ Plain Rules
+	•	Use only geometric primitives: rect, circle, line, path
+	•	Combine to form metaphors (e.g., folder = rectangle + top tab)
+	•	Favor symmetry and centered layout
+	•	Micro-asymmetry allowed for balance
+
+💡 Dev Logic
+
+function drawRect(x, y, width, height, rx = OUTER_CORNER_RADIUS) {
+  return `<rect x="${snapToGrid(x)}" y="${snapToGrid(y)}" width="${width}" height="${height}" rx="${rx}" ry="${rx}" />`;
+}
+
+function drawLine(x1, y1, x2, y2) {
+  return `<line x1="${snapToGrid(x1)}" y1="${snapToGrid(y1)}" x2="${snapToGrid(x2)}" y2="${snapToGrid(y2)}" />`;
+}
+
+
+⸻
+
+✨ 4. DECORATIONS (Sparkles & Dots)
+
+✅ Plain Rules
+	•	Max 3 sparkles, 4-point style
+	•	Sparkles randomly rotated 15–30°
+	•	Dots: ≤1.5dp, max 5, only to indicate action/charm
+
+💡 Dev Logic
+
+function drawSparkle(x, y, rotationDeg = 20) {
+  return `<use href="#sparkle" transform="translate(${x}, ${y}) rotate(${rotationDeg})" />`;
+}
+
+function drawDot(x, y, radius = 0.75) {
+  return `<circle cx="${x}" cy="${y}" r="${radius}" />`;
+}
+
+
+⸻
+
+🎨 5. FILL AND COLOR
+
+✅ Plain Rules
+	•	Default: no fill (line icon)
+	•	Allow fills only if:
+	•	Shape is fully enclosed
+	•	It clarifies the metaphor (e.g., house wall)
+	•	Never use gradients
+	•	Use #FFFFFF for any fill
+
+💡 Dev Logic
+
+const DEFAULT_FILL = 'none';
+const ALLOWED_FILL = '#FFFFFF';
+function getFill(fillAllowed = false) {
+  return fillAllowed ? ALLOWED_FILL : DEFAULT_FILL;
+}
+
+
+⸻
+
+🧭 6. PERSPECTIVE
+
+✅ Plain Rules
+	•	Flat view only — front or side
+	•	No 3D tilt, depth simulation, or shadow
+	•	Everything must feel “drawn on paper” not rendered
+
+💡 Dev Logic
+
+// No perspective projection or skewing transforms allowed
+// Only use scale, rotate, and translate
+
+
+⸻
+
+🎛 7. COMPOSITION
+
+✅ Plain Rules
+	•	Center the icon within the live area
+	•	Favor optical balance over strict math centering
+	•	Icons can suggest motion (e.g., arrow curve), but should feel stable
+
+💡 Dev Logic
+
+function centerIcon(x, y, width, height) {
+  const offset = (CANVAS_SIZE - width) / 2;
+  return { x: snapToGrid(x + offset), y: snapToGrid(y + offset) };
+}
+
+
+⸻
+
+🔍 8. ACCESSIBILITY & SCALABILITY
+
+✅ Plain Rules
+	•	Must work at 16dp, 20dp, 24dp, 48dp
+	•	Contrast ratio must be at least 4.5:1
+	•	Icons must not rely on color to convey meaning
+
+💡 Dev Logic
+
+// Use black-on-white by default; ensure contrast never drops
+const MIN_CONTRAST_RATIO = 4.5;
+
+
+⸻
+
+🧪 9. VALIDATION RULES
+
+Use this to write a validateIcon() function in JS:
+
+function validateIcon(icon) {
+  const errors = [];
+
+  if (icon.strokeWidth !== 2) errors.push('Stroke width must be 2dp');
+  if (icon.canvasSize !== 24) errors.push('Canvas size must be 24dp');
+  if (icon.containsSubpixels) errors.push('Subpixel points are not allowed');
+  if (icon.decoration.sparkles.length > 3) errors.push('Too many sparkles');
+  if (icon.decorations.dots.length > 5) errors.push('Too many dots');
+  if (icon.usesGradient) errors.push('Gradients are not allowed');
+  if (!icon.accessibility.contrastPasses) errors.push('Fails contrast ratio');
+
+  return errors.length > 0 ? errors : ['PASS'];
+}
+
+
+⸻
+
+📦 10. OUTPUT FORMAT (Per Icon)
+
+Each icon should output like this:
+
+export const navigation_home = {
+  name: "navigation_home",
+  svg: "<svg viewBox='0 0 24 24' ...>...</svg>",
+  tags: ["navigation", "dashboard", "entry_point"],
+  metadata: {
+    strokeWidth: 2,
+    fillUsed: false,
+    opticalAdjustments: true,
+    validated: true
+  }
+}
+
+
+⸻
+
+🔥 BONUS: Built-in Icon Generator Function
+
+function generateIcon({ name, primaryShape, decorations = [] }) {
+  const svgParts = [];
+
+  // Primary shape (e.g., house)
+  svgParts.push(drawRect(4, 10, 16, 10));
+  svgParts.push(drawLine(4, 10, 12, 2));
+  svgParts.push(drawLine(12, 2, 20, 10));
+
+  // Add decorations
+  decorations.forEach(dec => {
+    if (dec.type === 'sparkle') svgParts.push(drawSparkle(dec.x, dec.y, dec.rotate));
+    if (dec.type === 'dot') svgParts.push(drawDot(dec.x, dec.y));
+  });
+
+  return {
+    name,
+    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="${STROKE_COLOR}" stroke-width="${STROKE_WIDTH}" stroke-linecap="square">${svgParts.join('\n')}</svg>`,
+    tags: [],
+    metadata: { validated: true }
+  };
+}
+
+
+⸻
+
+Would you like this bootstrapped into a Replit-ready app, a Figma plugin, or a Node.js CLI icon generator? I can also write the validator module or geometry parser next.

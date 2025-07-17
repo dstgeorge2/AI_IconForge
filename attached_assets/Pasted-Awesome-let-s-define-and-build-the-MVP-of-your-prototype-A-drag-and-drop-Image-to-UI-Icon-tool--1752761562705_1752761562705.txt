@@ -1,0 +1,156 @@
+Awesome — let’s define and build the MVP of your prototype:
+A drag-and-drop “Image to UI Icon” tool, using a brutalist UI, backed by modern, flexible tech.
+
+⸻
+
+🛠️ MVP Spec: Icon Forge
+
+Tagline: Drop image. Get pixel-perfect icon.
+
+⸻
+
+✅ Core MVP Flow
+	1.	User drops an image (photo, sketch, screenshot)
+	2.	It runs through a black-box AI model to extract an SVG icon
+	3.	The icon is styled according to the Vectra Icon Style Guide
+	4.	User gets:
+	•	SVG preview
+	•	Copy as React component
+	•	Option to download or validate
+
+⸻
+
+🧱 Stack (Lean & Brutalist)
+
+Layer	Tech	Notes
+UI	HTML + Tailwind (brutal UI)	Keep raw, flat, grid-aligned
+Frontend	React + Vite	Fast hot reload, JSX simplicity
+SVG Engine	SVG DOM (no canvas)	SVG rendered with JS
+Backend	OpenAI Vision API (GPT-4o)	Use Function Calling to output geometry
+SVG Logic	Paper.js or custom JS DSL	Convert geometry → SVG paths
+Hosting	Replit (quick deploy)	One-click, self-contained project
+
+
+⸻
+
+🧪 Prompt Engineering (Black Box AI Call)
+
+Send image to GPT-4o with this kind of system message:
+
+{
+  "role": "system",
+  "content": "You are an icon vectorization assistant. Convert the image into a geometric icon using the Vectra Icon Style Guide. Output SVG path instructions for a 24x24dp canvas. Use 2dp black stroke, flat orthographic view, no fills unless required."
+}
+
+
+⸻
+
+📁 Project File Structure
+
+/icon-forge/
+├── public/
+│   └── index.html
+├── src/
+│   ├── App.jsx
+│   ├── DropZone.jsx
+│   ├── IconRenderer.jsx
+│   ├── api/convertImageToIcon.js
+│   └── styleGuide.js
+├── tailwind.config.js
+├── index.css
+├── vite.config.js
+└── README.md
+
+
+⸻
+
+💻 Core UI: Brutalist Layout
+
+Wireframe
+
++-----------------------------+
+|  ICON FORGE [Logo]         |
+|----------------------------|
+| [ Drop image here ]        |
+|                            |
+| [•• Drag & Drop Zone ••]   |
+|                            |
+|----------------------------|
+|  ⬛ Generated Icon:         |
+|  <svg preview>             |
+|                            |
+| [ Copy SVG ] [ Download ]  |
++-----------------------------+
+
+Tailwind Style Hints
+
+<div className="bg-white text-black border border-black p-4 grid gap-4 text-sm font-mono">
+  <h1 className="text-xl uppercase">Icon Forge</h1>
+  <DropZone />
+  <IconRenderer />
+</div>
+
+
+⸻
+
+🧠 Key Logic (convertImageToIcon.js)
+
+export async function convertImageToIcon(file) {
+  const base64 = await fileToBase64(file);
+  const response = await fetch("/api/ai", {
+    method: "POST",
+    body: JSON.stringify({
+      image: base64,
+      prompt: "Convert to Vectra-style UI icon. Use SVG geometry. No color. 24x24dp. 2dp stroke.",
+    }),
+  });
+  const data = await response.json();
+  return data.svg; // string
+}
+
+
+⸻
+
+🔄 Function: fileToBase64
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+
+⸻
+
+🧪 Validation Module (Optional)
+
+import { validateIcon } from './styleGuide.js';
+const report = validateIcon(svgCode);
+console.log("Validation report:", report);
+
+
+⸻
+
+🧾 Deliverables
+
+You’ll get in MVP:
+	•	Brutalist drag-and-drop UI
+	•	Vision → Icon AI pipeline
+	•	SVG preview + download
+	•	Black-box AI abstraction
+	•	(Optional) Validator report
+
+⸻
+
+🚀 NEXT PHASE (Post-MVP)
+	•	Drag in screenshot from Figma → get cleaned icon
+	•	Add batch mode (drop folder of assets)
+	•	Add style toggles (filled, decorative, animated)
+	•	Save icon metadata as .json with geometry plan
+
+⸻
+
+Would you like me to scaffold the actual files (App.jsx, DropZone.jsx, etc.) with working React+Tailwind+Replit? Or a working GPT-4o call structure to plug in first?

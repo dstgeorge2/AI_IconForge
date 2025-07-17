@@ -1,0 +1,96 @@
+Here is an updated section of your Icon System Style Guide that refines and expands the rules based on the analysis and final rendering of the home icon. These updates emphasize practical affordances while preserving visual discipline and stylistic integrity.
+
+⸻
+
+🧭 Icon Style Guide – Updated Rules v1.2 (Post-Home Icon Refinement)
+
+⸻
+
+🔧 A. Geometry & Stroke Rules
+
+📐 Core Stroke Principles
+	•	Standard Weight: 2dp stroke (optically adjusted when needed)
+	•	Stroke Terminal: Squared or 45° clipped
+	•	Stroke Style: Solid only (no dashed, double, or simulated textures)
+	•	Corner Radius:
+	•	Outer Corners: 2dp rounded unless geometric clarity demands sharpness
+	•	Interior Corners: Square unless softened for optical alignment
+	•	Doorways and Arches: Can use 2dp–3dp radius for curves
+
+🔳 Canvas & Grid
+	•	Canvas: 24dp × 24dp
+	•	Live Area: 20dp × 20dp centered
+	•	Padding: Maintain 2dp spacing from all edges
+	•	Pixel Alignment: All points must snap to whole pixel grid
+	•	No Subpixel Units: All measurements in dp increments (e.g., 2dp, 4dp)
+
+⸻
+
+🏠 B. Shape Construction Guidelines
+
+🔲 General Form Language
+	•	Prefer regular geometry: triangles, circles, squares, and rectangles
+	•	Symmetry encouraged unless balance dictates asymmetry (e.g., motion)
+	•	Roof angles (in metaphors like houses, tents, or structures): use 45° slope
+	•	Avoid extreme diagonals, overlapping strokes, or non-harmonious angles
+
+🧱 Building Structures (e.g., Home, Folder, Container)
+	•	Use flat orthographic front view — no perspective or foreshortening
+	•	A house shape should consist of:
+	•	A base (rectangular or square)
+	•	A roof (triangle or trapezoid)
+	•	A centered door or cutout (e.g., arch, rectangle)
+
+⸻
+
+💡 C. Icon Expression & Metaphor Rules
+
+📚 Recognizable Metaphors
+	•	Use culturally universal objects (e.g., house = home, gear = settings)
+	•	Ensure icons are distinguishable in 16dp size
+	•	Avoid exotic or overly stylized forms — clarity > cleverness
+
+🧠 Descriptive Layering
+
+Each icon design must be described with:
+	1.	Geometric Breakdown (dimensions, shapes, angles)
+	2.	Conceptual Purpose (why this metaphor fits)
+	3.	User-Facing Summary (plain English explanation of what it does)
+
+⸻
+
+✨ D. Decoration and Detail
+
+Sparkles & Dots
+	•	Sparkles: 4-pointed, max 3 per icon, rotated 15°–30°, subtle scale variation
+	•	Dots: Circular or soft-square, ≤ 1.5dp, max 5 per icon
+	•	All decorative elements must:
+	•	Respect live area
+	•	Not obstruct or overpower primary shape
+	•	Appear purposeful and balanced
+
+⸻
+
+🧘 E. Style Integrity and Usage
+
+Element	Rule
+Fill Policy	Line icons only by default. Filled elements allowed only if:
+– Primary shape is fully enclosed	
+– Fill conveys structure (e.g., a house wall vs. outline)	
+– Contrast is retained	
+Flatness	No shadows, gradients, or 3D simulation
+Consistency	All icons must share rhythm, metaphor strength, and stroke alignment
+Accessibility	Must work at 16dp, pass 4.5:1 contrast, and not rely on color alone
+
+
+⸻
+
+📦 F. File & Metadata Output
+	•	Formats: SVG, Figma component, Adobe Illustrator
+	•	Naming: Use snake_case (e.g., navigation_home, workflow_node)
+	•	Metadata Tags: Include function, domain, and user role (e.g., navigation, dashboard, general_user)
+	•	Document: All optical adjustments and stroke corrections must be logged
+
+⸻
+
+Would you like me to create a template icon spec sheet using this format for each future icon (e.g., workflow_spark, folder_alert, etc.)?
