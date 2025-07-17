@@ -178,10 +178,10 @@ function getVariantContext(variantType: string): { system: string; constraints: 
         system: 'IBM Carbon Design',
         constraints: '- Carbon grid system\n- 2dp stroke weight\n- Modern, friendly style\n- Squared terminals'
       };
-    case 'pictogram':
+    case 'filled':
       return {
-        system: 'IBM Carbon Pictogram',
-        constraints: '- Illustrative approach\n- 32px/48px optimization\n- More detailed than standard icons'
+        system: 'Filled Icon Style',
+        constraints: '- Solid fills instead of strokes\n- High contrast design\n- Minimal outline usage'
       };
     default:
       return {

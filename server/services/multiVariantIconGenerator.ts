@@ -400,54 +400,55 @@ Explain which Carbon Design principles guided your design and how you adapted th
   };
 }
 
-// Generate Pictogram variant using IBM Carbon rules
-export async function generatePictogramVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
+// Generate Filled variant using solid filled style
+export async function generateFilledVariant(context: VariantGenerationContext): Promise<IconVariantResponse> {
   const semantic = context.intelligentPrompt.semanticAnalysis;
   const imageAnalysis = context.intelligentPrompt.imageAnalysis;
   
   const prompt = `
-# IBM CARBON PICTOGRAM GENERATION
+# FILLED ICON GENERATION
 
 ## OBJECTIVE
-Create a pictogram following IBM Carbon Design System pictogram rules, using the uploaded image as visual guidance.
+Create a filled icon with solid shapes and minimal outlines, using the uploaded image as visual guidance.
 
-## CARBON PICTOGRAM SPECIFICATIONS
-- **Purpose**: Illustrative icons for larger display contexts
-- **Grid System**: 24x24dp base, but optimized for 32px and 48px display
-- **Stroke Weight**: Consistent 2dp weight, simplified for pictogram clarity
-- **Style**: More illustrative than standard icons, but still geometric
-- **Usage**: Headlines, larger screen contexts, display type applications
-- **Clarity**: Must be readable at distance and larger sizes
+## FILLED ICON SPECIFICATIONS
+- **Purpose**: Solid, filled icons for emphasis and active states
+- **Grid System**: 24x24dp canvas with 20x20dp live area
+- **Style**: Solid fills with minimal or no stroke outlines
+- **Weight**: Use fills instead of strokes for primary shapes
+- **Usage**: Active states, emphasized elements, bold visual hierarchy
+- **Clarity**: High contrast through solid shapes and negative space
 
 ## VISUAL REFERENCE
 - **Image Content**: ${imageAnalysis.primarySubject}
 - **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
 - **Visual Elements**: ${imageAnalysis.visualElements.join(', ')}
 
-## PICTOGRAM DESIGN PRINCIPLES
-1. **Illustrative Clarity**: More detailed than standard icons
-2. **Geometric Foundation**: Based on Carbon's geometric forms
-3. **Simplified Complexity**: Allow more detail while maintaining clarity
-4. **Consistent Style**: Match Carbon's pictogram visual language
-5. **Scalability**: Optimized for 32dp, 40dp, 48dp display
-6. **Communicative**: Tell a story or represent concepts more fully
+## FILLED ICON DESIGN PRINCIPLES
+1. **Solid Shapes**: Use fill="black" for primary elements
+2. **Minimal Strokes**: Avoid stroke outlines unless necessary for clarity
+3. **High Contrast**: Strong contrast between filled and negative space
+4. **Simplified Forms**: Clean, bold shapes that read well when filled
+5. **Negative Space**: Use white space effectively for internal details
+6. **Visual Weight**: Balance filled areas for optical harmony
+7. **Scalability**: Ensure filled shapes work at all sizes
 
 ## GENERATION REQUIREMENTS
-- Apply Carbon's pictogram guidelines
-- Use consistent stroke weight and geometric foundation
-- Allow more illustrative detail than standard icons
-- Two-pass refinement for pictogram compliance
-- Ensure clarity at larger display sizes
+- Convert stroke-based designs to filled shapes
+- Use solid black fills for primary elements
+- Minimize stroke usage except for essential details
+- Ensure high contrast and readability
+- Balance visual weight across the composition
 
-Generate a clean Carbon Design pictogram that uses the uploaded image as visual reference while following IBM's pictogram specifications.
+Generate a clean filled icon that uses the uploaded image as visual reference while creating solid, high-contrast shapes.
 
-Explain which pictogram principles guided your design and how you created a more illustrative version.
+Explain which elements you converted to fills and how you maintained clarity through solid shapes.
 `;
 
   const response = await anthropic.messages.create({
     model: DEFAULT_MODEL_STR,
     max_tokens: 2000,
-    system: "You are an expert IBM Carbon Design pictogram creator. Apply IBM's pictogram system rigorously with two-pass refinement. Always respond with valid SVG code and explanations.",
+    system: "You are an expert SVG icon designer specializing in filled icons. Create solid, filled icons with high contrast and minimal outlines. Always respond with valid SVG code and explanations.",
     messages: [
       {
         role: "user",
@@ -476,17 +477,17 @@ Explain which pictogram principles guided your design and how you created a more
     variant: {
       id: 0,
       conversionId: 0,
-      variantType: 'pictogram',
+      variantType: 'filled',
       svgCode: result.svg,
-      explanation: result.explanation || "Carbon Design pictogram with illustrative clarity.",
+      explanation: result.explanation || "Filled icon with solid shapes and high contrast.",
       confidence,
-      metadata: { approach: 'carbon-pictogram', source: 'ibm-pictogram-system' },
+      metadata: { approach: 'filled-style', source: 'solid-fill-system' },
       createdAt: new Date()
     },
     svg: result.svg,
-    explanation: result.explanation || "Carbon Design pictogram with illustrative clarity.",
+    explanation: result.explanation || "Filled icon with solid shapes and high contrast.",
     confidence,
-    metadata: { approach: 'carbon-pictogram', source: 'ibm-pictogram-system' }
+    metadata: { approach: 'filled-style', source: 'solid-fill-system' }
   };
 }
 
@@ -775,12 +776,12 @@ export async function generateMultiVariantIconsFromText(textDescription: string)
   };
   
   // Generate all variants in parallel (using modified versions of existing functions)
-  const [oneToOne, uiIntent, material, carbon, pictogram] = await Promise.all([
+  const [oneToOne, uiIntent, material, carbon, filled] = await Promise.all([
     generateOneToOneVariantFromText(context),
     generateUIIntentVariantFromText(context),
     generateMaterialVariantFromText(context),
     generateCarbonVariantFromText(context),
-    generatePictogramVariantFromText(context)
+    generateFilledVariantFromText(context)
   ]);
   
   console.log('✅ Multi-Variant Generation - All variants generated successfully');
@@ -793,7 +794,7 @@ export async function generateMultiVariantIconsFromText(textDescription: string)
       'ui-intent': uiIntent,
       'material': material,
       'carbon': carbon,
-      'pictogram': pictogram
+      'filled': filled
     }
   };
 }
@@ -845,9 +846,9 @@ async function generateCarbonVariantFromText(context: VariantGenerationContext):
   return await generateTextVariant(prompt, context);
 }
 
-async function generatePictogramVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
-  const prompt = `Generate an IBM Carbon pictogram for: "${context.textDescription}". 
-  Create a more detailed illustrative icon for larger display contexts, 24x24dp base, geometric forms.
+async function generateFilledVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const prompt = `Generate a filled icon for: "${context.textDescription}". 
+  Create a solid filled icon with minimal strokes, using solid shapes for emphasis and high contrast.
   Return valid SVG code and explanation.`;
   
   return await generateTextVariant(prompt, context);
@@ -987,12 +988,12 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
   console.log('🎯 Multi-Variant Generation - Generating 5 variants...');
   
   // Generate all 5 variants in parallel
-  const [oneToOne, uiIntent, material, carbon, pictogram] = await Promise.all([
+  const [oneToOne, uiIntent, material, carbon, filled] = await Promise.all([
     generateOneToOneVariant(context),
     generateUIIntentVariant(context),
     generateMaterialVariant(context),
     generateCarbonVariant(context),
-    generatePictogramVariant(context)
+    generateFilledVariant(context)
   ]);
   
   console.log('✅ Multi-Variant Generation - All variants generated successfully');
@@ -1005,7 +1006,7 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
       'ui-intent': uiIntent,
       'material': material,
       'carbon': carbon,
-      'pictogram': pictogram
+      'filled': filled
     }
   };
 }

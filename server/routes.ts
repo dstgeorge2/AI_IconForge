@@ -156,11 +156,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }),
         storage.createIconVariant({
           conversionId: conversion.id,
-          variantType: 'pictogram',
-          svgCode: multiVariantResult.variants.pictogram.svg,
-          explanation: multiVariantResult.variants.pictogram.explanation,
-          confidence: multiVariantResult.variants.pictogram.confidence,
-          metadata: multiVariantResult.variants.pictogram.metadata
+          variantType: 'filled',
+          svgCode: multiVariantResult.variants.filled.svg,
+          explanation: multiVariantResult.variants.filled.explanation,
+          confidence: multiVariantResult.variants.filled.confidence,
+          metadata: multiVariantResult.variants.filled.metadata
         })
       ]);
 

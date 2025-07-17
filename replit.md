@@ -34,7 +34,7 @@ Preferred communication style: Simple, everyday language.
   - **Tab 2: UI Intent** - Based on image and filename analysis for semantic understanding
   - **Tab 3: Material** - Google Material Design + image following strict design system with variable font attributes
   - **Tab 4: Carbon** - IBM Carbon Design + image with consistent visual language
-  - **Tab 5: Pictogram** - IBM Carbon pictogram rules for larger display contexts
+  - **Tab 5: Filled** - Solid filled style with high contrast and minimal outlines
 - **Multi-Size Preview System** (2025-01-17): Icons displayed at standard sizes:
   - Horizontal row preview: 16dp, 20dp, 24dp, 32dp, 48dp
   - Proper sizing constraints and optical testing at multiple scales

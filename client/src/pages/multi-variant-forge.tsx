@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend, Target, Palette, Cpu, Grid3x3, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend, Target, Palette, Cpu, Square, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -142,7 +142,7 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
       case 'ui-intent': return 'Based on image and name';
       case 'material': return 'Google Material + Image';
       case 'carbon': return 'IBM Carbon + Image';
-      case 'pictogram': return 'IBM Carbon Pictogram rules';
+      case 'filled': return 'Solid filled style';
       default: return 'Icon variant';
     }
   };
@@ -715,9 +715,9 @@ export default function MultiVariantForge() {
                       <Cpu className="w-4 h-4 mr-1" />
                       Carbon
                     </TabsTrigger>
-                    <TabsTrigger value="pictogram" className="font-mono text-xs">
-                      <Grid3x3 className="w-4 h-4 mr-1" />
-                      Pictogram
+                    <TabsTrigger value="filled" className="font-mono text-xs">
+                      <Square className="w-4 h-4 mr-1 fill-current" />
+                      Filled
                     </TabsTrigger>
                   </TabsList>
 
@@ -769,10 +769,10 @@ export default function MultiVariantForge() {
                     />
                   </TabsContent>
 
-                  <TabsContent value="pictogram">
+                  <TabsContent value="filled">
                     <VariantDisplay
-                      variant={multiVariantResult.variants['pictogram']}
-                      variantType="pictogram"
+                      variant={multiVariantResult.variants['filled']}
+                      variantType="filled"
                       fileName={multiVariantResult.originalImageName}
                       revisionExpanded={revisionExpanded}
                       setRevisionExpanded={setRevisionExpanded}
