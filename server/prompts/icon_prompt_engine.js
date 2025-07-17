@@ -5,6 +5,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import parseIconName from './name_intent_parser.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -29,7 +30,8 @@ const rulesets = {
   shape: loadRuleset('shape_and_structure_rules.json'),
   semantic: loadRuleset('semantic_and_context_rules.json'),
   perspective: loadRuleset('perspective_and_dimensionality.json'),
-  output: loadRuleset('output_and_accessibility.json')
+  output: loadRuleset('output_and_accessibility.json'),
+  enhanced_ui: loadRuleset('enhanced_ui_rules.json')
 };
 
 // ------------------------------------------------------------
@@ -56,7 +58,7 @@ const systemThinking = {
 };
 
 // ------------------------------------------------------------
-// 🎯 SEMANTIC INTENT PARSER
+// 🎯 ENHANCED SEMANTIC INTENT PARSER
 // ------------------------------------------------------------
 
 class SemanticIntentParser {
@@ -65,33 +67,21 @@ class SemanticIntentParser {
   }
 
   parseFromFilename(filename) {
-    const name = filename.toLowerCase().replace(/\.[^/.]+$/, "");
-    const parts = name.split(/[_-]/);
-    
-    let action = null;
-    let object = null;
-    let modifier = null;
-    
-    // Action detection
-    const actionWords = ['add', 'edit', 'delete', 'create', 'remove', 'update', 'view', 'open', 'close', 'save'];
-    action = parts.find(part => actionWords.includes(part)) || 'view';
-    
-    // Object detection
-    const objectWords = ['desk', 'node', 'file', 'folder', 'user', 'workspace', 'document', 'image', 'data'];
-    object = parts.find(part => objectWords.includes(part)) || 'item';
-    
-    // Modifier detection
-    const modifierWords = ['new', 'small', 'large', 'active', 'disabled', 'primary', 'secondary'];
-    modifier = parts.find(part => modifierWords.includes(part));
+    // Use enhanced name parsing with comprehensive object mapping
+    const parsed = parseIconName(filename);
     
     return {
-      filename: name,
-      action,
-      object,
-      modifier,
-      intent: this.contextMapping[object] || `${action} ${object}`,
-      icon_role: this.determineIconRole(action),
-      contextual_scope: this.determineContext(object)
+      filename: parsed.name,
+      original_filename: parsed.original_filename,
+      action: parsed.action,
+      object: parsed.object,
+      modifier: parsed.modifier,
+      intent: parsed.intent,
+      icon_role: parsed.icon_role,
+      contextual_scope: parsed.contextual_scope,
+      metaphor: parsed.metaphor,
+      complexity_level: parsed.complexity_level,
+      semantic_tags: parsed.semantic_tags
     };
   }
 
@@ -292,13 +282,40 @@ Choose the most universally recognized icon metaphor for "${intent.intent}". Con
   }
 
   getRulesetInstructions() {
+    const actionPatterns = rulesets.enhanced_ui.ui_icon_specific_rules?.recognition_patterns?.action_icons || {};
+    const objectPatterns = rulesets.enhanced_ui.ui_icon_specific_rules?.recognition_patterns?.object_icons || {};
+    
     return `STRICT RULESET COMPLIANCE:
 • ${rulesets.principles.principles ? Object.values(rulesets.principles.principles).join('\n• ') : 'Follow clarity and consistency principles'}
 • Stroke: ${rulesets.stroke.stroke?.default_weight || '2dp'} width, ${rulesets.stroke.stroke?.color || 'black'} color, ${rulesets.stroke.stroke?.style || 'solid'} style
 • Perspective: ${rulesets.perspective.perspective || 'orthographic'} only, no ${rulesets.perspective.allow_3d ? '' : '3D, '}${rulesets.perspective.allow_tilt ? '' : 'tilt, '}depth effects
 • Elements: Primary shape required, max ${rulesets.shape.elements?.supporting_limit || 2} supporting elements
 • Grid: All coordinates must be integers, snap to pixel grid
-• Accessibility: ${rulesets.output.contrast_ratio_min || '4.5:1'} contrast ratio minimum`;
+• Accessibility: ${rulesets.output.contrast_ratio_min || '4.5:1'} contrast ratio minimum
+
+ENHANCED UI ICON PATTERNS:
+${this.getSpecificPatternGuidance(actionPatterns, objectPatterns)}
+
+QUALITY METRICS:
+• Immediate recognition: 95% recognition rate target
+• Scale performance: 100% clarity at 16dp minimum
+• Accessibility: WCAG 2.1 AA compliance
+• Consistency: 90% visual consistency with system`;
+  }
+
+  getSpecificPatternGuidance(actionPatterns, objectPatterns) {
+    const intent = this.intent;
+    const guidance = [];
+    
+    if (actionPatterns[intent.action]) {
+      guidance.push(`ACTION PATTERN: ${actionPatterns[intent.action]}`);
+    }
+    
+    if (objectPatterns[intent.object]) {
+      guidance.push(`OBJECT PATTERN: ${objectPatterns[intent.object]}`);
+    }
+    
+    return guidance.join('\n') || 'Use universally recognized patterns for this concept';
   }
 
   getQualityAssurance() {

@@ -203,7 +203,9 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
         validated: finalValidation.isValid,
         conceptualPurpose: finalResult.conceptualPurpose,
         semanticIntent: pass1.semanticIntent,
-        validationSummary: finalValidation.summary
+        validationSummary: finalValidation.summary,
+        originalFilename: fileName,
+        suggestedFilename: pass1.semanticIntent.filename + '.svg'
       },
       validationResults: legacyValidation
     };

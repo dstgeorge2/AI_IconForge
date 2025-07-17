@@ -1,0 +1,193 @@
+{
+  "rule_module": "enhanced_ui_rules",
+  "ui_icon_specific_rules": {
+    "recognition_patterns": {
+      "action_icons": {
+        "add": "Plus sign (+) as primary element, centered within live area",
+        "edit": "Pencil or pen shape, diagonal orientation preferred",
+        "delete": "X mark or trash bin, clearly destructive in nature",
+        "save": "Floppy disk or download arrow, pointing downward",
+        "copy": "Overlapping rectangles, slightly offset",
+        "cut": "Scissors shape, diagonal orientation",
+        "paste": "Clipboard with content indicator",
+        "undo": "Curved arrow pointing counter-clockwise",
+        "redo": "Curved arrow pointing clockwise",
+        "refresh": "Circular arrow, 3/4 circle recommended"
+      },
+      "object_icons": {
+        "file": "Rectangle with corner fold, 16x12dp recommended",
+        "folder": "Folder shape with front flap, 18x14dp",
+        "user": "Circle head with body shoulders, 16x16dp",
+        "settings": "Gear with 8 teeth, perfectly circular",
+        "search": "Magnifying glass, handle at 45° angle",
+        "calendar": "Grid with top binding, 3x4 internal grid",
+        "clock": "Circle with hands at readable angle",
+        "mail": "Envelope with flap, rectangular base",
+        "phone": "Rounded rectangle, portrait orientation",
+        "camera": "Rectangle with lens circle, centered"
+      },
+      "system_icons": {
+        "server": "Vertical cylinder with horizontal lines",
+        "database": "Stacked cylinders, 2-3 levels",
+        "network": "Connected nodes, hub-and-spoke pattern",
+        "cloud": "Fluffy cloud outline, 3-4 bumps",
+        "download": "Arrow pointing down with horizontal line",
+        "upload": "Arrow pointing up with horizontal line",
+        "sync": "Two curved arrows in circle",
+        "link": "Chain links, 2-3 links visible",
+        "shield": "Classic shield shape, pointed bottom",
+        "lock": "Padlock with U-shaped shackle"
+      }
+    },
+    "contextual_adaptations": {
+      "toolbar_icons": {
+        "size_optimization": "Designed for 24dp, tested at 16dp",
+        "spacing_compensation": "Account for 4dp minimum touch target",
+        "visual_weight": "Slightly heavier strokes for small contexts",
+        "alignment": "Pixel-perfect alignment to baseline grid"
+      },
+      "navigation_icons": {
+        "recognition_priority": "Immediate recognition over stylistic consistency",
+        "standard_metaphors": "Use universally recognized symbols",
+        "directional_clarity": "Clear indication of navigation direction",
+        "state_indication": "Support for active/inactive states"
+      },
+      "status_icons": {
+        "color_independence": "Meaningful without color information",
+        "size_consistency": "Consistent sizing across status types",
+        "animation_ready": "Designed for potential micro-animations",
+        "accessibility": "High contrast and screen reader compatibility"
+      }
+    },
+    "interaction_states": {
+      "default": {
+        "stroke": "#000000",
+        "fill": "none",
+        "opacity": "1.0"
+      },
+      "hover": {
+        "stroke": "#000000",
+        "fill": "none",
+        "opacity": "0.8",
+        "note": "Opacity change handled by UI system"
+      },
+      "active": {
+        "stroke": "#000000",
+        "fill": "#000000",
+        "opacity": "1.0",
+        "note": "Fill applied to indicate active state"
+      },
+      "disabled": {
+        "stroke": "#000000",
+        "fill": "none",
+        "opacity": "0.4",
+        "note": "Reduced opacity for disabled state"
+      }
+    },
+    "platform_considerations": {
+      "web_browsers": {
+        "svg_optimization": "Minimize DOM nodes, use paths over primitives",
+        "rendering_performance": "Avoid complex curves and filters",
+        "accessibility": "Include proper ARIA labels and roles"
+      },
+      "mobile_devices": {
+        "touch_targets": "Minimum 44dp touch target area",
+        "retina_display": "Vector-based for sharp rendering",
+        "performance": "Lightweight SVG for fast loading"
+      },
+      "desktop_applications": {
+        "multiple_sizes": "Scalable from 16dp to 48dp",
+        "consistency": "Match platform design guidelines",
+        "theming": "Support for light/dark themes"
+      }
+    },
+    "quality_metrics": {
+      "immediate_recognition": {
+        "test": "Can user identify purpose in < 1 second?",
+        "target": "95% recognition rate",
+        "method": "A/B testing with target users"
+      },
+      "scale_performance": {
+        "test": "Remains clear at 16dp minimum size",
+        "target": "100% clarity at all supported sizes",
+        "method": "Visual testing across size range"
+      },
+      "accessibility_compliance": {
+        "test": "Meets WCAG 2.1 AA standards",
+        "target": "100% compliance",
+        "method": "Automated accessibility testing"
+      },
+      "consistency_score": {
+        "test": "Matches system design patterns",
+        "target": "Visual consistency score > 90%",
+        "method": "Design system audit"
+      }
+    }
+  },
+  "output_quality_improvements": {
+    "semantic_precision": {
+      "metaphor_selection": "Choose most universal symbol for concept",
+      "cultural_sensitivity": "Avoid region-specific symbols",
+      "context_awareness": "Consider icon's usage environment",
+      "future_proofing": "Select timeless over trendy metaphors"
+    },
+    "visual_hierarchy": {
+      "primary_element": "Single most important shape (60% visual weight)",
+      "secondary_elements": "Supporting details (30% visual weight)",
+      "decorative_elements": "Minimal accent details (10% visual weight)",
+      "balance_principle": "Maintain visual equilibrium across quadrants"
+    },
+    "technical_precision": {
+      "grid_alignment": "All elements snap to integer grid coordinates",
+      "stroke_consistency": "Uniform 2dp stroke width throughout",
+      "corner_treatment": "Consistent radius application",
+      "spacing_rhythm": "Regular spacing intervals (2dp, 4dp, 6dp)"
+    },
+    "user_experience": {
+      "cognitive_load": "Minimize mental processing required",
+      "scanning_efficiency": "Optimized for rapid visual scanning",
+      "error_prevention": "Distinct enough to avoid mis-identification",
+      "learnability": "Easy to remember and recognize"
+    }
+  },
+  "advanced_validation": {
+    "perceptual_testing": {
+      "squint_test": "Icon remains identifiable when squinting",
+      "peripheral_vision": "Recognizable in peripheral vision",
+      "motion_clarity": "Clear during scrolling or animation",
+      "fatigue_resistance": "Doesn't cause eye strain during extended use"
+    },
+    "cross_platform_validation": {
+      "rendering_consistency": "Identical appearance across browsers",
+      "scaling_behavior": "Maintains quality at all sizes",
+      "color_mode_support": "Works in light and dark themes",
+      "accessibility_features": "Compatible with screen readers"
+    },
+    "context_validation": {
+      "background_contrast": "Sufficient contrast on various backgrounds",
+      "neighboring_icons": "Distinguishable from adjacent icons",
+      "text_proximity": "Harmonious with accompanying text",
+      "button_integration": "Appropriate for button/control contexts"
+    }
+  },
+  "implementation_guidelines": {
+    "svg_structure": {
+      "root_element": "<svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>",
+      "grouping": "Use <g> for logical element grouping",
+      "path_optimization": "Combine paths where possible",
+      "id_attributes": "Include meaningful IDs for accessibility"
+    },
+    "styling_approach": {
+      "inline_styles": "Use stroke and fill attributes, not CSS",
+      "default_properties": "stroke='#000000' stroke-width='2' fill='none'",
+      "customization": "Allow color override via CSS custom properties",
+      "responsive_design": "Use em/rem units for scalable sizing"
+    },
+    "accessibility_implementation": {
+      "title_element": "Include <title> for screen readers",
+      "desc_element": "Add <desc> for detailed descriptions",
+      "aria_labels": "Use aria-label for interactive contexts",
+      "role_attributes": "Set appropriate ARIA roles"
+    }
+  }
+}

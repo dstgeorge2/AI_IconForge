@@ -1,0 +1,94 @@
+Here is your full Icon Name → Intent Logic Engine written in plain, copy-paste-friendly form — no code formatting. This is ready to insert directly into Replit, Claude, GPT, or any logic-based generator:
+
+⸻
+
+ICON NAME → INTENT PARSING LOGIC
+(Plain JS, no code blocks)
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––
+
+function parseIconName(name) {
+  const tokens = name.split(”_”);
+
+  // Step 1: Identify action
+  const knownActions = [
+    “add”, “delete”, “edit”, “view”, “create”, “remove”,
+    “open”, “close”, “duplicate”, “download”, “upload”,
+    “link”, “unlink”, “move”, “save”, “refresh”, “undo”
+  ];
+
+  let action = tokens[0];
+  if (!knownActions.includes(action)) action = “unknown”;
+
+  // Step 2: Detect object
+  let object = “unknown”;
+  for (let i = 1; i < tokens.length; i++) {
+    if (![“to”, “from”, “with”].includes(tokens[i])) {
+      object = tokens[i];
+      break;
+    }
+  }
+
+  // Step 3: Check for known modifiers
+  const modifier =
+    tokens.includes(“new”) ? “new” :
+    tokens.includes(“active”) ? “active” :
+    tokens.includes(“alert”) ? “alert” :
+    null;
+
+  // Step 4: Metaphor suggestions based on object
+  const objectMap = {
+    “desk”: “l_shape_surface”,
+    “file”: “document”,
+    “folder”: “folder”,
+    “workspace”: “grouped_squares”,
+    “node”: “circle”,
+    “activity”: “window_module”,
+    “component”: “box_with_label”,
+    “settings”: “gear”,
+    “link”: “chain”,
+    “trash”: “bin”,
+    “undo”: “arrow_ccw”,
+    “alert”: “triangle_exclamation”
+  };
+
+  return {
+    name,
+    action,
+    object,
+    modifier,
+    metaphor: objectMap[object] || “rectangle”,
+    description: capitalize(action) + “ “ + object,
+    semantic_tags: [action, object, modifier].filter(Boolean)
+  };
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––
+
+EXAMPLE INPUT:
+“add_to_desk”
+OUTPUT:
+{
+  name: “add_to_desk”,
+  action: “add”,
+  object: “desk”,
+  modifier: null,
+  metaphor: “l_shape_surface”,
+  description: “Add desk”,
+  semantic_tags: [“add”, “desk”]
+}
+
+–––––––––––––––––––––––––––––––––––––––––––––––––––
+
+You can copy and paste this directly into your logic engine. It works with the rest of your rule system and can drive:
+	•	geometry selection
+	•	modifier conditions
+	•	decoration permissions
+	•	label/tooltip generation
+	•	shape guards (e.g., don’t use sparkles unless modifier === "new")
+
+Let me know if you want this refactored to use .yaml or .json templates for multilingual export, or wired into your SVG render engine.
