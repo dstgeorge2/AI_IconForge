@@ -6,6 +6,8 @@ import { validateIcon } from './iconValidation';
 import { validateIconAtMultipleSizes } from './previewValidator';
 import { validateIconAgainstSet, analyzeIconSet, generateSetConsistencyRecommendations } from './setAwareValidator';
 import { validateSVG } from './svgValidation';
+import { optimizeSVG } from './svgOptimizer';
+import { optimizeAPIResponse } from './apiOptimizer';
 
 /*
 <important_code_snippet_instructions>
@@ -1053,7 +1055,9 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
   
   console.log('✅ Multi-Variant Generation - All variants generated successfully');
   
-  return {
+  // Optimize the entire response
+  const startTime = Date.now();
+  const response = {
     conversionId: 0, // Will be set when stored
     originalImageName: fileName,
     variants: {
@@ -1064,6 +1068,10 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
       'filled': filled
     }
   };
+  const processingTime = Date.now() - startTime;
+  
+  // Return optimized response
+  return optimizeAPIResponse(response, processingTime);
 }
 
 // Helper functions

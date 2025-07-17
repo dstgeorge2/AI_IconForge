@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { convertImageToIcon } from "./services/iconConverter";
 import IconRefinementService from "./services/iconRefinement";
 import { generateMultiVariantIcons, generateMultiVariantIconsFromText } from "./services/multiVariantIconGenerator";
+import { generateOptimizedMultiVariantIcons } from "./services/optimizedIconGenerator";
 import { generateRevisedIcon } from "./services/iconRevision";
 import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
 import multer from "multer";
@@ -110,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const base64Image = req.file.buffer.toString('base64');
         originalName = req.file.originalname;
         const additionalPrompt = req.body.prompt || '';
-        multiVariantResult = await generateMultiVariantIcons(originalName, base64Image, additionalPrompt);
+        multiVariantResult = await generateOptimizedMultiVariantIcons(originalName, base64Image, additionalPrompt);
       }
       
       // Create main conversion record
@@ -118,7 +119,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         originalImageName: originalName,
         svgCode: multiVariantResult.variants['one-to-one'].svg, // Use one-to-one as primary
         validationResults: [], // Add validation later
-        metadata: { approach: 'multi-variant' }
+        metadata: { 
+          approach: 'multi-variant-optimized',
+          processingTime: multiVariantResult.processingTime,
+          totalSize: multiVariantResult.totalSize,
+          optimized: true
+        }
       });
 
       // Store all variants
@@ -128,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           variantType: 'one-to-one',
           svgCode: multiVariantResult.variants['one-to-one'].svg,
           explanation: multiVariantResult.variants['one-to-one'].explanation,
-          confidence: multiVariantResult.variants['one-to-one'].confidence,
+          confidence: Math.round(multiVariantResult.variants['one-to-one'].confidence * 100),
           metadata: multiVariantResult.variants['one-to-one'].metadata
         }),
         storage.createIconVariant({
@@ -136,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           variantType: 'ui-intent',
           svgCode: multiVariantResult.variants['ui-intent'].svg,
           explanation: multiVariantResult.variants['ui-intent'].explanation,
-          confidence: multiVariantResult.variants['ui-intent'].confidence,
+          confidence: Math.round(multiVariantResult.variants['ui-intent'].confidence * 100),
           metadata: multiVariantResult.variants['ui-intent'].metadata
         }),
         storage.createIconVariant({
@@ -144,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           variantType: 'material',
           svgCode: multiVariantResult.variants.material.svg,
           explanation: multiVariantResult.variants.material.explanation,
-          confidence: multiVariantResult.variants.material.confidence,
+          confidence: Math.round(multiVariantResult.variants.material.confidence * 100),
           metadata: multiVariantResult.variants.material.metadata
         }),
         storage.createIconVariant({
@@ -152,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           variantType: 'carbon',
           svgCode: multiVariantResult.variants.carbon.svg,
           explanation: multiVariantResult.variants.carbon.explanation,
-          confidence: multiVariantResult.variants.carbon.confidence,
+          confidence: Math.round(multiVariantResult.variants.carbon.confidence * 100),
           metadata: multiVariantResult.variants.carbon.metadata
         }),
         storage.createIconVariant({
@@ -160,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           variantType: 'filled',
           svgCode: multiVariantResult.variants.filled.svg,
           explanation: multiVariantResult.variants.filled.explanation,
-          confidence: multiVariantResult.variants.filled.confidence,
+          confidence: Math.round(multiVariantResult.variants.filled.confidence * 100),
           metadata: multiVariantResult.variants.filled.metadata
         })
       ]);

@@ -310,9 +310,36 @@ function extractVisualPatterns(cleanName: string, action: string, object: string
   return [...new Set(patterns)]; // Remove duplicates
 }
 
+// Validate image format
+function validateImageFormat(mediaType: string): string {
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  return validTypes.includes(mediaType) ? mediaType : 'image/jpeg';
+}
+
+// Validate image data
+function validateImageData(imageBase64: string): string {
+  if (!imageBase64 || typeof imageBase64 !== 'string') {
+    throw new Error('Invalid image data');
+  }
+  
+  // Remove data URL prefix if present
+  const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+  
+  // Basic base64 validation
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanBase64)) {
+    throw new Error('Invalid base64 format');
+  }
+  
+  return cleanBase64;
+}
+
 // Analyze image using vision API with enhanced multimodal pipeline
 export async function analyzeImageVision(imageBase64: string, mediaType: string): Promise<ImageVisionAnalysis> {
   try {
+    // Validate image format and size
+    const validatedMediaType = validateImageFormat(mediaType);
+    const validatedImageData = validateImageData(imageBase64);
+    
     // Enhanced structured prompt for better computer vision analysis
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
@@ -355,8 +382,8 @@ Return structured JSON with keys: primarySubject, visualElements, colors, compos
             type: "image",
             source: {
               type: "base64",
-              media_type: mediaType,
-              data: imageBase64
+              media_type: validatedMediaType,
+              data: validatedImageData
             }
           }
         ]
@@ -376,15 +403,15 @@ Return structured JSON with keys: primarySubject, visualElements, colors, compos
     
     return {
       primarySubject: result.primarySubject || 'unknown',
-      visualElements: result.visualElements || [],
-      colors: result.colors || [],
+      visualElements: Array.isArray(result.visualElements) ? result.visualElements.filter(e => typeof e === 'string') : [],
+      colors: Array.isArray(result.colors) ? result.colors.filter(c => typeof c === 'string') : [],
       composition: result.composition || 'centered',
-      recognizableFeatures: result.recognizableFeatures || [],
+      recognizableFeatures: Array.isArray(result.recognizableFeatures) ? result.recognizableFeatures.filter(f => typeof f === 'string') : [],
       complexity: result.complexity || 'moderate',
-      geometryHints: result.geometryHints || [],
-      structuralElements: result.structuralElements || [],
+      geometryHints: Array.isArray(result.geometryHints) ? result.geometryHints.filter(h => typeof h === 'string') : [],
+      structuralElements: Array.isArray(result.structuralElements) ? result.structuralElements.filter(e => typeof e === 'string') : [],
       strokeStyle: result.strokeStyle || 'outline',
-      metaphorSuggestions: result.metaphorSuggestions || []
+      metaphorSuggestions: Array.isArray(result.metaphorSuggestions) ? result.metaphorSuggestions.filter(s => typeof s === 'string') : []
     };
   } catch (error) {
     console.error('Vision analysis failed:', error);
@@ -461,18 +488,23 @@ export function findPatternMatches(semanticAnalysis: SemanticAnalysis, imageAnal
   }
   
   // Visual element matching - only if vision analysis worked
-  if (imageAnalysis.primarySubject !== 'unknown') {
+  if (imageAnalysis.primarySubject !== 'unknown' && Array.isArray(imageAnalysis.visualElements)) {
     imageAnalysis.visualElements.forEach(element => {
-      const elementLower = element.toLowerCase();
-      for (const [category, patterns] of Object.entries(UI_ICON_PATTERNS)) {
-        for (const [key, pattern] of Object.entries(patterns)) {
-          if (pattern.patterns.some(p => elementLower.includes(p))) {
-            matches.push({
-              pattern: `visual:${element}`,
-              confidence: 0.7,
-              iconSuggestion: pattern.geometric,
-              geometricApproach: pattern.geometric
-            });
+      // Ensure element is a string before calling toLowerCase
+      if (typeof element === 'string' && element.length > 0) {
+        const elementLower = element.toLowerCase();
+        for (const [category, patterns] of Object.entries(UI_ICON_PATTERNS)) {
+          for (const [key, pattern] of Object.entries(patterns)) {
+            if (pattern.patterns && Array.isArray(pattern.patterns)) {
+              if (pattern.patterns.some(p => typeof p === 'string' && elementLower.includes(p))) {
+                matches.push({
+                  pattern: `visual:${element}`,
+                  confidence: 0.7,
+                  iconSuggestion: pattern.geometric,
+                  geometricApproach: pattern.geometric
+                });
+              }
+            }
           }
         }
       }
