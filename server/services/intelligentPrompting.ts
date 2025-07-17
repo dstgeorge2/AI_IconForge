@@ -340,7 +340,16 @@ Respond in JSON format with keys: primarySubject, visualElements, colors, compos
       }]
     });
     
-    const result = JSON.parse(response.content[0].text);
+    let responseText = response.content[0].text;
+    
+    // Remove markdown code blocks if present
+    if (responseText.includes('```json')) {
+      responseText = responseText.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    } else if (responseText.includes('```')) {
+      responseText = responseText.replace(/```\s*/, '').replace(/```\s*$/, '');
+    }
+    
+    const result = JSON.parse(responseText);
     
     return {
       primarySubject: result.primarySubject || 'unknown',
@@ -481,6 +490,24 @@ export function generateEnhancedPrompt(
   patternMatches: CommonPatternMatch[]
 ): string {
   const topPatterns = patternMatches.slice(0, 3);
+  const visionWorked = imageAnalysis.primarySubject !== 'unknown';
+  
+  // Build stronger context when vision analysis fails
+  let contextualGuidance = '';
+  if (!visionWorked) {
+    contextualGuidance = `
+## CRITICAL: IMAGE VISION FAILED - RELY ON FILENAME ANALYSIS
+Since image analysis failed, focus entirely on filename semantics and patterns:
+- **Primary Strategy**: Create icon based on "${semanticAnalysis.detectedAction}" action
+- **Visual Target**: ${semanticAnalysis.universalMetaphor}
+- **Pattern Focus**: ${topPatterns[0]?.iconSuggestion || 'geometric representation of concept'}
+- **Backup Approach**: Use established UI conventions for "${semanticAnalysis.detectedObject}" objects
+
+**ESSENTIAL**: The filename "${semanticAnalysis.filename}" suggests:
+${semanticAnalysis.visualPatterns.map(pattern => `- "${pattern}": commonly represented as geometric shapes`).join('\n')}
+
+Focus on these filename clues rather than trying to interpret the image.`;
+  }
   
   return `
 # INTELLIGENT ICON GENERATION PROMPT
@@ -493,15 +520,17 @@ export function generateEnhancedPrompt(
 - **Icon Role**: ${semanticAnalysis.iconRole}
 - **Universal Metaphor**: ${semanticAnalysis.universalMetaphor}
 
+${contextualGuidance}
+
 ## IMAGE VISION ANALYSIS  
 - **Primary Subject**: ${imageAnalysis.primarySubject}
-- **Visual Elements**: ${imageAnalysis.visualElements.join(', ')}
+- **Visual Elements**: ${imageAnalysis.visualElements.join(', ') || 'N/A'}
 - **Composition**: ${imageAnalysis.composition}
 - **Complexity**: ${imageAnalysis.complexity}
-- **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ')}
-- **Geometric Hints**: ${imageAnalysis.geometryHints.join(', ')}
+- **Key Features**: ${imageAnalysis.recognizableFeatures.join(', ') || 'N/A'}
+- **Geometric Hints**: ${imageAnalysis.geometryHints.join(', ') || 'N/A'}
 
-## PATTERN MATCHES
+## PATTERN MATCHES (${topPatterns.length} found)
 ${topPatterns.map(match => `- **${match.pattern}** (${(match.confidence * 100).toFixed(0)}%): ${match.iconSuggestion}`).join('\n')}
 
 ## ENHANCED GENERATION STRATEGY
@@ -509,15 +538,17 @@ Based on the combined analysis, create an SVG icon that:
 
 1. **PRIMARY APPROACH**: ${topPatterns[0]?.geometricApproach || 'Use geometric primitives to represent the main concept'}
 
-2. **VISUAL INTEGRATION**: Combine filename semantics with image visual elements:
+2. **FILENAME-DRIVEN DESIGN**: 
+   - Action: "${semanticAnalysis.detectedAction}" → Use ${getActionMetaphor(semanticAnalysis.detectedAction)}
+   - Object: "${semanticAnalysis.detectedObject}" → Use ${getObjectMetaphor(semanticAnalysis.detectedObject)}
+   - Combined: ${semanticAnalysis.universalMetaphor}
+
+3. **VISUAL INTEGRATION**: ${visionWorked ? 
+   `Combine filename semantics with image visual elements:
    - Focus on: ${imageAnalysis.primarySubject}
    - Emphasize: ${imageAnalysis.recognizableFeatures.slice(0, 2).join(' and ')}
-   - Simplify: ${imageAnalysis.complexity === 'complex' ? 'Reduce complexity while preserving essence' : 'Maintain clear geometric forms'}
-
-3. **METAPHOR IMPLEMENTATION**: ${semanticAnalysis.universalMetaphor}
-   - Use universally recognized symbols
-   - Maintain cultural neutrality
-   - Ensure immediate recognition
+   - Simplify: ${imageAnalysis.complexity === 'complex' ? 'Reduce complexity while preserving essence' : 'Maintain clear geometric forms'}` :
+   `Since image analysis failed, rely entirely on filename patterns and UI conventions`}
 
 4. **CONTEXTUAL OPTIMIZATION**: 
    - Category: ${semanticAnalysis.contextualCategory}
@@ -527,17 +558,77 @@ Based on the combined analysis, create an SVG icon that:
 5. **GEOMETRIC CONSTRAINTS**:
    - 24x24dp canvas, 20x20dp live area
    - 2dp stroke width, black strokes
-   - Use ${imageAnalysis.geometryHints.length > 0 ? imageAnalysis.geometryHints[0] : 'basic geometric shapes'}
+   - Use ${visionWorked && imageAnalysis.geometryHints.length > 0 ? imageAnalysis.geometryHints[0] : 'basic geometric shapes based on filename patterns'}
    - Maintain proportional balance
 
 ## QUALITY VALIDATION
-- Test mental model against filename expectation
+- Test mental model against filename expectation: "${semanticAnalysis.filename}"
 - Verify visual clarity at 16dp minimum size
 - Ensure geometric consistency with Vectra style guide
 - Validate universal recognition across cultures
 
-Generate a clean, geometric SVG icon that successfully bridges the semantic intent from the filename with the visual essence from the image analysis.
+**CRITICAL SUCCESS FACTOR**: The icon MUST be immediately recognizable as representing "${semanticAnalysis.detectedAction}" and "${semanticAnalysis.detectedObject}" from the filename, regardless of image content.
+
+Generate a clean, geometric SVG icon that successfully represents the semantic intent from the filename.
 `;
+}
+
+// Helper functions for metaphor generation
+function getActionMetaphor(action: string): string {
+  const actionMetaphors = {
+    'edit': 'pencil or stylus angled at 45 degrees',
+    'add': 'plus sign (+ symbol) centered',
+    'delete': 'trash can or X mark',
+    'save': 'floppy disk or downward arrow',
+    'search': 'magnifying glass with handle',
+    'menu': 'three horizontal parallel lines',
+    'settings': 'gear or cog wheel',
+    'close': 'X mark with crossing lines',
+    'move': 'four-way directional arrows',
+    'view': 'eye symbol or magnifying glass',
+    'share': 'branching arrows or connected nodes',
+    'copy': 'two overlapping rectangles',
+    'download': 'downward pointing arrow',
+    'upload': 'upward pointing arrow',
+    'refresh': 'circular arrow',
+    'expand': 'diagonal arrows pointing outward',
+    'collapse': 'diagonal arrows pointing inward',
+    'sort': 'horizontal lines of varying lengths',
+    'filter': 'funnel shape',
+    'play': 'right-pointing triangle',
+    'pause': 'two vertical rectangles',
+    'lock': 'padlock with curved shackle',
+    'unlock': 'open padlock'
+  };
+  return actionMetaphors[action] || 'abstract geometric symbol';
+}
+
+function getObjectMetaphor(object: string): string {
+  const objectMetaphors = {
+    'home': 'house with triangle roof over square base',
+    'user': 'person silhouette (circle head, simple body)',
+    'email': 'envelope (rectangle with triangular flap)',
+    'phone': 'telephone handset or mobile device',
+    'calendar': 'grid with binding at top',
+    'folder': 'file folder with tab',
+    'document': 'paper with folded corner',
+    'image': 'picture frame with mountain and sun',
+    'video': 'rectangle with play triangle',
+    'music': 'musical note or speaker',
+    'location': 'map pin (teardrop with circle)',
+    'star': 'five-pointed star shape',
+    'heart': 'heart shape (two curves with point)',
+    'lock': 'padlock (rectangle with curved top)',
+    'key': 'key with circular head and teeth',
+    'cloud': 'cloud shape with curves',
+    'database': 'stacked cylinders',
+    'wifi': 'concentric signal arcs',
+    'battery': 'rectangle with small terminal',
+    'code': 'angled brackets < >',
+    'terminal': 'rectangle with cursor or prompt',
+    'bug': 'insect with oval body and legs'
+  };
+  return objectMetaphors[object] || 'abstract geometric representation';
 }
 
 // Generate contextual instructions
