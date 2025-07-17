@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -339,6 +340,9 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
 
 export default function MultiVariantForge() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [inputMode, setInputMode] = useState<'image' | 'text'>('image');
+  const [textDescription, setTextDescription] = useState('');
   const [multiVariantResult, setMultiVariantResult] = useState<MultiVariantIconResponse | null>(null);
   const [activeTab, setActiveTab] = useState('one-to-one');
   const [revisionExpanded, setRevisionExpanded] = useState<{[key: string]: boolean}>({});
@@ -415,8 +419,16 @@ export default function MultiVariantForge() {
     maxSize: 10 * 1024 * 1024, // 10MB
     onDrop: (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
-        setSelectedFile(acceptedFiles[0]);
+        const file = acceptedFiles[0];
+        setSelectedFile(file);
         setMultiVariantResult(null);
+        
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreview(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
       }
     },
     onDropRejected: (rejectedFiles) => {
@@ -428,10 +440,50 @@ export default function MultiVariantForge() {
     }
   });
 
+  // Handle paste functionality
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          setSelectedFile(file);
+          setMultiVariantResult(null);
+          
+          // Create preview URL
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            setImagePreview(e.target?.result as string);
+          };
+          reader.readAsDataURL(file);
+          
+          toast({
+            title: 'Image pasted!',
+            description: `Pasted ${file.name || 'image'} successfully`
+          });
+        }
+        break;
+      }
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setMultiVariantResult(null);
+  };
+
   const generateMutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (input: File | string) => {
       const formData = new FormData();
-      formData.append('image', file);
+      
+      if (typeof input === 'string') {
+        // Text description mode
+        formData.append('textDescription', input);
+      } else {
+        // Image file mode
+        formData.append('image', input);
+      }
       
       const response = await apiRequest('POST', '/api/generate-multi-variant-icons', formData);
       
@@ -454,8 +506,13 @@ export default function MultiVariantForge() {
   });
 
   const handleGenerate = () => {
-    if (!selectedFile) return;
-    generateMutation.mutate(selectedFile);
+    if (inputMode === 'image') {
+      if (!selectedFile) return;
+      generateMutation.mutate(selectedFile);
+    } else {
+      if (!textDescription.trim()) return;
+      generateMutation.mutate(textDescription);
+    }
   };
 
   const handleDownloadAll = () => {
@@ -499,40 +556,105 @@ export default function MultiVariantForge() {
           {/* Upload Section */}
           <Card className="border-2 border-black bg-white mb-8">
             <CardHeader>
-              <CardTitle className="font-mono">Upload Image</CardTitle>
-              <CardDescription className="font-mono">
-                Upload an image to generate clean UI icons using intelligent analysis
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="font-mono">
+                    {inputMode === 'image' ? 'Upload Image' : 'Describe Icon'}
+                  </CardTitle>
+                  <CardDescription className="font-mono">
+                    {inputMode === 'image' 
+                      ? 'Upload an image to generate clean UI icons using intelligent analysis'
+                      : 'Describe the icon you want to create in plain text'
+                    }
+                  </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-mono">Image</label>
+                  <Switch
+                    checked={inputMode === 'text'}
+                    onCheckedChange={(checked) => {
+                      setInputMode(checked ? 'text' : 'image');
+                      setSelectedFile(null);
+                      setImagePreview(null);
+                      setTextDescription('');
+                      setMultiVariantResult(null);
+                    }}
+                  />
+                  <label className="text-sm font-mono">Text</label>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed border-black p-8 text-center cursor-pointer transition-colors ${
-                  isDragActive ? 'bg-blue-50' : 'bg-gray-50'
-                }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                {selectedFile ? (
-                  <div className="space-y-2">
-                    <p className="font-mono text-sm font-medium">{selectedFile.name}</p>
-                    <p className="font-mono text-xs text-gray-500">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+              {inputMode === 'image' ? (
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed border-black p-8 text-center cursor-pointer transition-colors ${
+                    isDragActive ? 'bg-blue-50' : 'bg-gray-50'
+                  }`}
+                  onPaste={handlePaste}
+                  tabIndex={0}
+                >
+                  <input {...getInputProps()} />
+                  {imagePreview ? (
+                    <div className="space-y-4">
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-48 max-h-48 object-contain border border-gray-300 rounded"
+                        />
+                        <Button
+                          onClick={handleRemoveImage}
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-mono text-sm font-medium">{selectedFile?.name}</p>
+                        <p className="font-mono text-xs text-gray-500">
+                          {selectedFile && (selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        <p className="font-mono text-xs text-gray-400">
+                          Drag new image or paste to replace
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <p className="font-mono text-sm">
+                        {isDragActive ? 'Drop the image here' : 'Drag & drop an image here'}
+                      </p>
+                      <p className="font-mono text-xs text-gray-500">
+                        or click to select • Paste with Ctrl+V
+                      </p>
+                      <p className="font-mono text-xs text-gray-400">
+                        PNG, JPG, GIF, WebP • Max 10MB
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <textarea
+                    value={textDescription}
+                    onChange={(e) => setTextDescription(e.target.value)}
+                    placeholder="Describe the icon you want to create... (e.g., 'A pencil for editing content', 'Shopping cart for e-commerce', 'Lock icon for security')"
+                    className="w-full p-4 border-2 border-black rounded text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={4}
+                    maxLength={500}
+                  />
+                  <div className="flex justify-between items-center text-xs text-gray-500 font-mono">
+                    <span>Be specific about the icon's purpose and context</span>
+                    <span>{textDescription.length}/500 characters</span>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="font-mono text-sm">
-                      {isDragActive ? 'Drop the image here' : 'Drag & drop an image here'}
-                    </p>
-                    <p className="font-mono text-xs text-gray-500">
-                      or click to select (PNG, JPG, GIF, WebP • Max 10MB)
-                    </p>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
               
-              {selectedFile && (
+              {((inputMode === 'image' && selectedFile) || (inputMode === 'text' && textDescription.trim())) && (
                 <div className="mt-4 flex justify-center">
                   <Button
                     onClick={handleGenerate}

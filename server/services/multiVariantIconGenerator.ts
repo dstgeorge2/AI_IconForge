@@ -20,7 +20,8 @@ const anthropic = new Anthropic({
 
 export interface VariantGenerationContext {
   fileName: string;
-  base64Image: string;
+  base64Image?: string;
+  textDescription?: string;
   intelligentPrompt: IntelligentPromptResult;
 }
 
@@ -698,7 +699,184 @@ Explain what elements you blended and what you emphasized in your final decision
   };
 }
 
-// Generate all 4 variants
+// Generate icons from text description
+export async function generateMultiVariantIconsFromText(textDescription: string): Promise<MultiVariantIconResponse> {
+  console.log('🎯 Multi-Variant Generation - Starting text-based analysis...');
+  
+  // Create a mock intelligent prompt for text-based generation
+  const intelligentPrompt: IntelligentPromptResult = {
+    imageAnalysis: {
+      primarySubject: 'text-description',
+      recognizableFeatures: [textDescription],
+      visualElements: ['text-based-icon-request'],
+      geometricHints: [],
+      complexity: 'moderate'
+    },
+    filenameAnalysis: {
+      detectedAction: 'create',
+      detectedObject: 'icon',
+      category: 'custom',
+      universalMetaphor: textDescription
+    },
+    patternMatching: {
+      materialDesignSimilarity: 0.8,
+      carbonDesignSimilarity: 0.8,
+      fontAwesomeSimilarity: 0.7,
+      commonUIPatterns: ['custom-icon']
+    },
+    enhancedPrompt: textDescription,
+    confidenceScore: 0.9,
+    generationApproach: 'text-description'
+  };
+  
+  console.log('🎯 Multi-Variant Generation - Generating 5 variants from text...');
+  
+  const context: VariantGenerationContext = {
+    fileName: 'text-description.txt',
+    textDescription,
+    intelligentPrompt
+  };
+  
+  // Generate all variants in parallel (using modified versions of existing functions)
+  const [oneToOne, uiIntent, material, carbon, pictogram] = await Promise.all([
+    generateOneToOneVariantFromText(context),
+    generateUIIntentVariantFromText(context),
+    generateMaterialVariantFromText(context),
+    generateCarbonVariantFromText(context),
+    generatePictogramVariantFromText(context)
+  ]);
+  
+  console.log('✅ Multi-Variant Generation - All variants generated successfully');
+  
+  return {
+    conversionId: 0, // Will be set when stored
+    originalImageName: 'text-description.txt',
+    variants: {
+      'one-to-one': oneToOne,
+      'ui-intent': uiIntent,
+      'material': material,
+      'carbon': carbon,
+      'pictogram': pictogram
+    }
+  };
+}
+
+// Text-based variant generation functions
+async function generateOneToOneVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const prompt = `Generate a clean UI icon based on this text description: "${context.textDescription}". 
+  Create a 24x24dp SVG icon with 2dp black stroke, no fill. Focus on the most recognizable visual metaphor for this concept.
+  Return valid SVG code and explanation.`;
+  
+  return await generateTextVariant(prompt, context);
+}
+
+async function generateUIIntentVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const prompt = `Generate a UI icon that represents the functional intent of: "${context.textDescription}". 
+  Create a 24x24dp SVG icon with 2dp black stroke, no fill. Focus on the action or purpose this icon would serve in a user interface.
+  Return valid SVG code and explanation.`;
+  
+  return await generateTextVariant(prompt, context);
+}
+
+async function generateMaterialVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const prompt = `Generate a Google Material Design icon for: "${context.textDescription}". 
+  Follow Material Design specifications: 24x24dp canvas, 20x20dp live area, 2dp stroke weight, geometric shapes.
+  Return valid SVG code and explanation.`;
+  
+  return await generateTextVariant(prompt, context);
+}
+
+async function generateCarbonVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const prompt = `Generate an IBM Carbon Design icon for: "${context.textDescription}". 
+  Follow Carbon Design specifications: 24x24dp artboard, 2dp stroke weight, modern geometric style.
+  Return valid SVG code and explanation.`;
+  
+  return await generateTextVariant(prompt, context);
+}
+
+async function generatePictogramVariantFromText(context: VariantGenerationContext): Promise<IconVariantResponse> {
+  const prompt = `Generate an IBM Carbon pictogram for: "${context.textDescription}". 
+  Create a more detailed illustrative icon for larger display contexts, 24x24dp base, geometric forms.
+  Return valid SVG code and explanation.`;
+  
+  return await generateTextVariant(prompt, context);
+}
+
+async function generateTextVariant(prompt: string, context: VariantGenerationContext): Promise<IconVariantResponse> {
+  try {
+    const response = await anthropic.messages.create({
+      model: DEFAULT_MODEL_STR,
+      max_tokens: 2000,
+      system: "You are an expert SVG icon designer. Generate clean, geometric SVG icons following exact specifications. Always respond with valid SVG code and explanations.",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      tools: [
+        {
+          name: "generate_icon_svg",
+          description: "Generate an SVG icon with explanation and confidence score",
+          input_schema: {
+            type: "object",
+            properties: {
+              svg: {
+                type: "string",
+                description: "Complete SVG code for the icon"
+              },
+              explanation: {
+                type: "string",
+                description: "Explanation of the design decisions and visual metaphors used"
+              },
+              confidence: {
+                type: "number",
+                description: "Confidence score from 0-100 indicating design quality"
+              }
+            },
+            required: ["svg", "explanation", "confidence"]
+          }
+        }
+      ],
+      tool_choice: { type: "tool", name: "generate_icon_svg" }
+    });
+
+    const result = response.content[0].type === 'tool_use' ? response.content[0].input : null;
+    if (!result) {
+      throw new Error('No tool response received');
+    }
+
+    return {
+      variant: {
+        id: 0,
+        conversionId: 0,
+        variantType: 'text-based',
+        svgCode: result.svg,
+        explanation: result.explanation,
+        confidence: result.confidence,
+        metadata: { 
+          approach: 'text-description',
+          source: context.textDescription,
+          textBased: true
+        },
+        createdAt: new Date()
+      },
+      svg: result.svg,
+      explanation: result.explanation,
+      confidence: result.confidence,
+      metadata: { 
+        approach: 'text-description',
+        source: context.textDescription,
+        textBased: true
+      }
+    };
+  } catch (error) {
+    console.error('Text variant generation error:', error);
+    throw error;
+  }
+}
+
+// Generate all 5 variants from image
 export async function generateMultiVariantIcons(fileName: string, base64Image: string): Promise<MultiVariantIconResponse> {
   console.log('🎯 Multi-Variant Generation - Starting intelligent analysis...');
   

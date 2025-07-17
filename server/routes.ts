@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { convertImageToIcon } from "./services/iconConverter";
 import IconRefinementService from "./services/iconRefinement";
-import { generateMultiVariantIcons } from "./services/multiVariantIconGenerator";
+import { generateMultiVariantIcons, generateMultiVariantIconsFromText } from "./services/multiVariantIconGenerator";
 import { generateRevisedIcon } from "./services/iconRevision";
 import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
 import multer from "multer";
@@ -94,16 +94,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Multi-variant icon generation
   app.post('/api/generate-multi-variant-icons', upload.single('image'), async (req: Request, res: Response) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No image file provided' });
+      let multiVariantResult;
+      let originalName;
+      
+      if (req.body.textDescription) {
+        // Text description mode
+        const textDescription = req.body.textDescription;
+        originalName = 'text-description.txt';
+        multiVariantResult = await generateMultiVariantIconsFromText(textDescription);
+      } else {
+        // Image file mode
+        if (!req.file) {
+          return res.status(400).json({ error: 'No image file or text description provided' });
+        }
+        const base64Image = req.file.buffer.toString('base64');
+        originalName = req.file.originalname;
+        multiVariantResult = await generateMultiVariantIcons(originalName, base64Image);
       }
-
-      const base64Image = req.file.buffer.toString('base64');
-      const multiVariantResult = await generateMultiVariantIcons(req.file.originalname, base64Image);
       
       // Create main conversion record
       const conversion = await storage.createIconConversion({
-        originalImageName: req.file.originalname,
+        originalImageName: originalName,
         svgCode: multiVariantResult.variants['one-to-one'].svg, // Use one-to-one as primary
         validationResults: [], // Add validation later
         metadata: { approach: 'multi-variant' }
@@ -155,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         conversionId: conversion.id,
-        originalImageName: req.file.originalname,
+        originalImageName: originalName,
         variants: {
           'one-to-one': {
             id: storedVariants[0].id,
