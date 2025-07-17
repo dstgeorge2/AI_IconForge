@@ -6,9 +6,10 @@ import { useToast } from '@/hooks/use-toast';
 interface ExportControlsProps {
   svg: string | null;
   disabled: boolean;
+  originalFilename?: string;
 }
 
-export default function ExportControls({ svg, disabled }: ExportControlsProps) {
+export default function ExportControls({ svg, disabled, originalFilename }: ExportControlsProps) {
   const [copyStates, setCopyStates] = useState({
     svg: false,
     react: false
@@ -30,7 +31,15 @@ export default function ExportControls({ svg, disabled }: ExportControlsProps) {
 
   const handleDownload = () => {
     if (!svg) return;
-    downloadSvg(svg);
+    
+    // Generate filename from original name or use default
+    let filename = 'icon.svg';
+    if (originalFilename) {
+      const nameWithoutExtension = originalFilename.replace(/\.[^/.]+$/, '');
+      filename = `${nameWithoutExtension}_icon.svg`;
+    }
+    
+    downloadSvg(svg, filename);
     toast({ title: "SVG file downloaded" });
   };
 

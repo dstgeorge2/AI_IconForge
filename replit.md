@@ -8,6 +8,14 @@ Icon Forge is a brutalist-styled web application that converts user-uploaded ima
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- **Icon Refinement System** (2025-01-17): Added comprehensive UI for iterative icon refinement with 3 methods:
+  - UI controls for stroke weight, style variation, and element count
+  - Custom prompt input for specific modifications
+  - Preset refinements (geometric, friendly, minimal, detailed, accessibility-focused)
+- **Download Filename Fix** (2025-01-17): Fixed SVG download to use original image filename instead of generic "icon.svg"
+
 ## System Architecture
 
 ### Frontend Architecture

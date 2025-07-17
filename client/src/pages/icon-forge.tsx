@@ -23,6 +23,7 @@ export default function IconForge() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
   const [showRefinementPanel, setShowRefinementPanel] = useState(false);
+  const [originalFilename, setOriginalFilename] = useState<string | null>(null);
   const { toast } = useToast();
 
   const convertMutation = useMutation({
@@ -68,6 +69,9 @@ export default function IconForge() {
       });
       return;
     }
+    
+    // Store original filename
+    setOriginalFilename(file.name);
     
     // Create preview of uploaded image
     const reader = new FileReader();
@@ -244,6 +248,7 @@ export default function IconForge() {
             <ExportControls 
               svg={generatedIcon?.svg || null}
               disabled={convertMutation.isPending}
+              originalFilename={originalFilename || undefined}
             />
           </div>
 
