@@ -738,7 +738,7 @@ export async function generateMultiVariantIcons(fileName: string, base64Image: s
 }
 
 // Helper functions
-function getMediaType(fileName: string): string {
+export function getMediaType(fileName: string): string {
   const ext = fileName.toLowerCase().split('.').pop();
   switch (ext) {
     case 'png': return 'image/png';

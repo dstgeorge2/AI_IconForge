@@ -24,9 +24,11 @@ interface VariantDisplayProps {
   fileName: string;
   revisionExpanded: {[key: string]: boolean};
   setRevisionExpanded: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>>;
+  selectedFile?: File | null;
+  revisionMutation?: any;
 }
 
-const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, fileName, revisionExpanded, setRevisionExpanded }) => {
+const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, fileName, revisionExpanded, setRevisionExpanded, selectedFile, revisionMutation }) => {
   const [copied, setCopied] = useState(false);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [customPrompt, setCustomPrompt] = useState('');
@@ -79,6 +81,8 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
     }
   });
 
+
+
   const handleRevision = () => {
     if (!customPrompt.trim() && !referenceFile) {
       toast({
@@ -89,11 +93,24 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
       return;
     }
     
-    // TODO: Implement revision API call
-    toast({
-      title: 'Revision requested',
-      description: 'Icon refinement will be implemented soon',
-    });
+    if (!selectedFile) {
+      toast({
+        title: 'Original image required',
+        description: 'The original image is needed for revision',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    if (revisionMutation) {
+      revisionMutation.mutate({
+        originalImage: selectedFile,
+        referenceIcon: referenceFile,
+        customPrompt: customPrompt,
+        variantType: variantType,
+        originalVariant: variant
+      });
+    }
   };
 
   const getVariantIcon = (type: string) => {
@@ -284,9 +301,16 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
               onClick={handleRevision}
               className="w-full font-mono" 
               variant="default"
-              disabled={!customPrompt.trim() && !referenceFile}
+              disabled={(!customPrompt.trim() && !referenceFile) || (revisionMutation && revisionMutation.isPending)}
             >
-              Revise & Regenerate
+              {revisionMutation && revisionMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Revising...
+                </>
+              ) : (
+                'Revise & Regenerate'
+              )}
             </Button>
           </div>
         )}
@@ -311,6 +335,63 @@ export default function MultiVariantForge() {
   const [revisionExpanded, setRevisionExpanded] = useState<{[key: string]: boolean}>({});
   const [selectedSizes, setSelectedSizes] = useState<number[]>([16, 20, 24, 32, 48]);
   const { toast } = useToast();
+
+  // Revision mutation for regenerating icons with user input
+  const revisionMutation = useMutation({
+    mutationFn: async ({ originalImage, referenceIcon, customPrompt, variantType, originalVariant }: {
+      originalImage: File;
+      referenceIcon: File | null;
+      customPrompt: string;
+      variantType: string;
+      originalVariant: any;
+    }) => {
+      const formData = new FormData();
+      formData.append('originalImage', originalImage);
+      if (referenceIcon) {
+        formData.append('referenceIcon', referenceIcon);
+      }
+      formData.append('customPrompt', customPrompt);
+      formData.append('variantType', variantType);
+      formData.append('originalVariant', JSON.stringify(originalVariant));
+      
+      const response = await apiRequest('POST', '/api/revise-icon', formData);
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Update the specific variant in the results
+      if (multiVariantResult) {
+        setMultiVariantResult(prev => ({
+          ...prev!,
+          variants: {
+            ...prev!.variants,
+            [variables.variantType]: {
+              ...data,
+              metadata: {
+                ...data.metadata,
+                revised: true,
+                originalVariant: variables.originalVariant
+              }
+            }
+          }
+        }));
+      }
+      
+      // Reset revision interface
+      setRevisionExpanded(prev => ({ ...prev, [variables.variantType]: false }));
+      
+      toast({
+        title: 'Icon revised successfully!',
+        description: 'Your feedback has been applied to generate an improved icon'
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Revision failed',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  });
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -510,6 +591,8 @@ export default function MultiVariantForge() {
                       fileName={multiVariantResult.originalImageName}
                       revisionExpanded={revisionExpanded}
                       setRevisionExpanded={setRevisionExpanded}
+                      selectedFile={selectedFile}
+                      revisionMutation={revisionMutation}
                     />
                   </TabsContent>
 
@@ -520,6 +603,8 @@ export default function MultiVariantForge() {
                       fileName={multiVariantResult.originalImageName}
                       revisionExpanded={revisionExpanded}
                       setRevisionExpanded={setRevisionExpanded}
+                      selectedFile={selectedFile}
+                      revisionMutation={revisionMutation}
                     />
                   </TabsContent>
 
@@ -530,6 +615,8 @@ export default function MultiVariantForge() {
                       fileName={multiVariantResult.originalImageName}
                       revisionExpanded={revisionExpanded}
                       setRevisionExpanded={setRevisionExpanded}
+                      selectedFile={selectedFile}
+                      revisionMutation={revisionMutation}
                     />
                   </TabsContent>
 
@@ -540,6 +627,8 @@ export default function MultiVariantForge() {
                       fileName={multiVariantResult.originalImageName}
                       revisionExpanded={revisionExpanded}
                       setRevisionExpanded={setRevisionExpanded}
+                      selectedFile={selectedFile}
+                      revisionMutation={revisionMutation}
                     />
                   </TabsContent>
 
@@ -550,6 +639,8 @@ export default function MultiVariantForge() {
                       fileName={multiVariantResult.originalImageName}
                       revisionExpanded={revisionExpanded}
                       setRevisionExpanded={setRevisionExpanded}
+                      selectedFile={selectedFile}
+                      revisionMutation={revisionMutation}
                     />
                   </TabsContent>
                 </Tabs>

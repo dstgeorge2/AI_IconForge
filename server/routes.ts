@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { convertImageToIcon } from "./services/iconConverter";
 import IconRefinementService from "./services/iconRefinement";
 import { generateMultiVariantIcons } from "./services/multiVariantIconGenerator";
+import { generateRevisedIcon } from "./services/iconRevision";
 import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
 import multer from "multer";
 import { z } from "zod";
@@ -23,6 +24,72 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize refinement service
   const refinementService = new IconRefinementService();
+  
+  // Icon revision endpoint
+  app.post('/api/revise-icon', upload.fields([
+    { name: 'originalImage', maxCount: 1 },
+    { name: 'referenceIcon', maxCount: 1 }
+  ]), async (req: Request, res: Response) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const { variantType, customPrompt, originalVariant } = req.body;
+      
+      if (!files.originalImage || !files.originalImage[0]) {
+        return res.status(400).json({ error: 'Original image is required' });
+      }
+      
+      if (!customPrompt && (!files.referenceIcon || !files.referenceIcon[0])) {
+        return res.status(400).json({ error: 'Either custom prompt or reference icon is required' });
+      }
+      
+      const originalImageBase64 = files.originalImage[0].buffer.toString('base64');
+      const referenceIconBase64 = files.referenceIcon && files.referenceIcon[0] 
+        ? files.referenceIcon[0].buffer.toString('base64')
+        : null;
+      
+      // Parse the original variant data
+      const originalVariantData = JSON.parse(originalVariant);
+      
+      // Generate revised icon with weighted user input
+      const revisedIcon = await generateRevisedIcon({
+        originalImageBase64,
+        referenceIconBase64,
+        customPrompt,
+        variantType,
+        originalVariant: originalVariantData,
+        originalImageName: files.originalImage[0].originalname
+      });
+      
+      // Store the revised variant
+      const conversion = await storage.createIconConversion({
+        originalImageName: files.originalImage[0].originalname,
+        svgCode: revisedIcon.svg,
+        validationResults: [],
+        metadata: { approach: 'revision', parentVariant: variantType }
+      });
+      
+      const storedVariant = await storage.createIconVariant({
+        conversionId: conversion.id,
+        variantType: `${variantType}-revised`,
+        svgCode: revisedIcon.svg,
+        explanation: revisedIcon.explanation,
+        confidence: revisedIcon.confidence,
+        metadata: revisedIcon.metadata
+      });
+      
+      res.json({
+        id: storedVariant.id,
+        svg: storedVariant.svgCode,
+        explanation: storedVariant.explanation,
+        confidence: storedVariant.confidence,
+        metadata: storedVariant.metadata
+      });
+      
+    } catch (error) {
+      console.error('Icon revision error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
   
   // Multi-variant icon generation
   app.post('/api/generate-multi-variant-icons', upload.single('image'), async (req: Request, res: Response) => {
