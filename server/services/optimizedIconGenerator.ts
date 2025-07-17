@@ -5,6 +5,7 @@ import { validateSVG } from './svgValidation';
 import { validateIcon } from './iconValidation';
 import { validateIconAtMultipleSizes } from './previewValidator';
 import { generateIntelligentPrompt } from './intelligentPrompting';
+import { validateWindchillIcon, WindchillIconMetadata } from './windchillIconValidator';
 
 /*
 <important_code_snippet_instructions>
@@ -31,6 +32,12 @@ export interface CleanVariantResponse {
     source: string;
     size: string;
     optimized: boolean;
+    windchillCompliance?: {
+      score: number;
+      valid: boolean;
+      errors: string[];
+      warnings: string[];
+    };
   };
 }
 
@@ -94,6 +101,17 @@ async function generateOptimizedVariant(
     // Optimize SVG for production
     const optimizedSVG = optimizeSVG(result.svg);
     
+    // Windchill compliance validation
+    const windchillMetadata: WindchillIconMetadata = {
+      domain: 'workflow',
+      function: approach.replace('-', '_'),
+      userRole: 'engineer',
+      iconType: approach.includes('action') ? 'action' : 'object',
+      systemArea: 'general',
+      description: result.explanation
+    };
+    const windchillValidation = validateWindchillIcon(optimizedSVG.svg, windchillMetadata);
+    
     // Use best available SVG
     const finalSVG = svgValidation.isValid ? optimizedSVG.svg : generateCleanFallback();
     
@@ -109,7 +127,13 @@ async function generateOptimizedVariant(
         approach,
         source,
         size: optimizedSVG.metadata.size,
-        optimized: true
+        optimized: true,
+        windchillCompliance: {
+          score: windchillValidation.score,
+          valid: windchillValidation.valid,
+          errors: windchillValidation.errors,
+          warnings: windchillValidation.warnings
+        }
       }
     };
   } catch (error) {
@@ -208,28 +232,38 @@ export async function generateOptimizedMultiVariantIcons(
  */
 function generateOneToOnePrompt(intelligentPrompt: any): string {
   return `
-# 1:1 VISUAL RECONSTRUCTION
-Analyze the image and recreate it as a clean UI icon while preserving essential visual characteristics.
+# 1:1 VISUAL RECONSTRUCTION - WINDCHILL STYLE
+Analyze the image and recreate it as a clean UI icon following PTC Windchill design standards.
 
 ## APPROACH
 - Primary Subject: ${intelligentPrompt.imageAnalysis.primarySubject}
 - Visual Elements: ${intelligentPrompt.imageAnalysis.visualElements.join(', ')}
 - Key Features: ${intelligentPrompt.imageAnalysis.recognizableFeatures.join(', ')}
 
-## CONSTRAINTS
-- 24x24dp canvas, 20x20dp live area
-- 2dp black stroke, no fill
-- Preserve spatial relationships from original
-- Focus on geometric simplification
+## WINDCHILL STYLE REQUIREMENTS
+- 24x24dp canvas, 20x20dp live area, 2dp padding
+- 2dp black stroke weight, square stroke endings
+- Orthographic perspective (flat, no 3D/isometric)
+- Pixel-snapped geometry, no subpixel rendering
+- Single recognizable metaphor
+- No gradients, shadows, or decorative elements
+- Must be readable at 16dp minimum size
 
-Generate a clean SVG icon that visually represents the original image.
+## CONSTRAINTS
+- Use geometric primitives: rectangles, circles, lines, triangles
+- Angles in 15° increments (prefer 45°/90°)
+- 2dp corner radius for outer corners
+- Maximum 2 supporting elements
+- Industrial tone suitable for enterprise use
+
+Generate a clean SVG icon following Windchill design standards.
 `;
 }
 
 function generateUIIntentPrompt(intelligentPrompt: any): string {
   return `
-# UI INTENT FUSION
-Combine image analysis with filename semantics to create an icon representing user intent.
+# UI INTENT FUSION - WINDCHILL ENTERPRISE STYLE
+Combine image analysis with filename semantics to create an icon for complex enterprise workflows.
 
 ## SEMANTIC CONTEXT
 - Filename: ${intelligentPrompt.semanticAnalysis.filename}
@@ -241,84 +275,120 @@ Combine image analysis with filename semantics to create an icon representing us
 - Image Shows: ${intelligentPrompt.imageAnalysis.primarySubject}
 - Visual Elements: ${intelligentPrompt.imageAnalysis.visualElements.join(', ')}
 
-## CONSTRAINTS
-- 24x24dp canvas, 20x20dp live area, 2dp stroke
-- Use universally recognized metaphors
-- Combine filename intent with visual validation
+## WINDCHILL REQUIREMENTS
+- Function-first design: clearly express object or action
+- Role-aware: suitable for engineers, planners, manufacturers
+- System-aligned: harmonize with enterprise complexity
+- Scalable: effective at 16dp minimum
+- Industrial tone: avoid playful or decorative elements
 
-Generate an icon that represents the user's intended meaning.
+## TECHNICAL CONSTRAINTS
+- 24x24dp canvas, 20x20dp live area, 2dp stroke
+- Square stroke endings, no rounded caps
+- Orthographic perspective only
+- No gradients, shadows, or 3D effects
+- Maximum 2 metaphors for composite icons
+
+Generate an enterprise-grade icon for Windchill workflows.
 `;
 }
 
 function generateMaterialPrompt(intelligentPrompt: any): string {
   return `
-# MATERIAL DESIGN ICON
-Create an icon following Google Material Design specifications.
+# MATERIAL DESIGN ICON - WINDCHILL ADAPTED
+Create an icon following Google Material Design specifications adapted for Windchill enterprise use.
 
-## MATERIAL PRINCIPLES
+## MATERIAL PRINCIPLES ADAPTED FOR WINDCHILL
 - Variable Font Attributes: Weight 400, Fill 0, Grade 0, Optical Size 24dp
-- Keyline shapes and consistent stroke weight
+- Keyline shapes with enterprise precision
 - Outlined style (fill=0) for base state
-- Proper geometric alignment
+- Square stroke endings (adapted from Material's rounded style)
+- Industrial clarity over consumer aesthetics
 
 ## CONTENT
 - Subject: ${intelligentPrompt.imageAnalysis.primarySubject}
 - Intent: ${intelligentPrompt.semanticAnalysis.universalMetaphor}
 
+## WINDCHILL ADAPTATIONS
+- Square stroke endings instead of rounded
+- 2dp stroke weight for enterprise clarity
+- Pixel-snapped geometry for technical precision
+- Suitable for dense enterprise interfaces
+- Functional over decorative
+
 ## CONSTRAINTS
 - 24x24dp canvas, 20x20dp live area
-- 2dp stroke weight, rounded caps and joins
-- Follow Material Design icon guidelines
+- 2dp stroke weight, square caps and miter joins
+- Follow Material grid but with Windchill modifications
 
-Generate a Material Design compliant icon.
+Generate a Material Design inspired icon optimized for enterprise workflows.
 `;
 }
 
 function generateCarbonPrompt(intelligentPrompt: any): string {
   return `
-# IBM CARBON DESIGN ICON
-Create an icon following IBM Carbon Design system specifications.
+# IBM CARBON DESIGN ICON - WINDCHILL ENTERPRISE
+Create an icon following IBM Carbon Design system specifications enhanced for Windchill enterprise complexity.
 
-## CARBON PRINCIPLES
+## CARBON PRINCIPLES FOR WINDCHILL
 - 2dp stroke weight with sharp, precise lines
-- Consistent visual language and grid system
-- Geometric precision and clarity
-- Minimal, functional approach
+- Consistent visual language and enterprise grid system
+- Geometric precision suitable for technical workflows
+- Minimal, functional approach that supports complex operations
+- Industrial strength design for manufacturing and engineering
 
 ## CONTENT
 - Subject: ${intelligentPrompt.imageAnalysis.primarySubject}
 - Intent: ${intelligentPrompt.semanticAnalysis.universalMetaphor}
 
+## WINDCHILL ENHANCEMENTS
+- Enhanced precision for CAD/manufacturing context
+- Support for object-heavy UIs (BOMs, change controls)
+- Role-aware design for engineers and manufacturers
+- Scalable for dense technical interfaces
+- Cognitive load reduction through clarity
+
 ## CONSTRAINTS
 - 24x24dp canvas, 20x20dp live area
 - 2dp stroke weight, square caps and miter joins
-- Follow IBM Carbon design guidelines
+- Pixel-perfect alignment for technical precision
+- No decorative elements, purely functional
 
-Generate a Carbon Design compliant icon.
+Generate a Carbon Design icon optimized for enterprise technical workflows.
 `;
 }
 
 function generateFilledPrompt(intelligentPrompt: any): string {
   return `
-# FILLED STYLE ICON
-Create a high-contrast filled icon with solid shapes.
+# FILLED STYLE ICON - WINDCHILL HIGH CONTRAST
+Create a high-contrast filled icon for Windchill enterprise interfaces with solid shapes.
 
-## FILLED PRINCIPLES
+## FILLED PRINCIPLES FOR WINDCHILL
 - Solid filled shapes with minimal outlines
-- High contrast for accessibility
-- Bold, recognizable silhouettes
-- Consistent weight and balance
+- High contrast for accessibility in industrial settings
+- Bold, recognizable silhouettes for quick recognition
+- Consistent weight and balance for enterprise consistency
+- Enhanced visibility for manufacturing floor use
 
 ## CONTENT
 - Subject: ${intelligentPrompt.imageAnalysis.primarySubject}
 - Intent: ${intelligentPrompt.semanticAnalysis.universalMetaphor}
 
+## WINDCHILL REQUIREMENTS
+- Industrial-strength contrast for various lighting conditions
+- Suitable for active/selected states in complex interfaces
+- Role-aware design for different user types
+- Scalable from 16dp to 48dp without quality loss
+- Function-first approach over aesthetic decoration
+
 ## CONSTRAINTS
 - 24x24dp canvas, 20x20dp live area
 - Use fill="currentColor" for solid shapes
 - Minimal stroke usage, focus on filled forms
+- Square corners and precise edges
+- No gradients or decorative fills
 
-Generate a high-contrast filled icon.
+Generate a high-contrast filled icon optimized for enterprise workflows.
 `;
 }
 

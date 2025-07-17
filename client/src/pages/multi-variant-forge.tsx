@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend, Target, Palette, Cpu, Square, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend, Target, Palette, Cpu, Square, ChevronDown, ChevronUp, Grid3x3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,6 +65,22 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  // Windchill Compliance Badge Component
+  const ComplianceBadge = ({ score, isValid }: { score: number; isValid: boolean }) => (
+    <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-1">
+        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+        <span className="text-xs font-mono text-gray-600">Windchill Compliance</span>
+      </div>
+      <Badge 
+        variant={isValid ? 'default' : 'destructive'}
+        className="text-xs font-mono"
+      >
+        {score}%
+      </Badge>
+    </div>
+  );
 
   // Reference file dropzone
   const { getRootProps: getReferenceProps, getInputProps: getReferenceInputProps, isDragActive: isReferenceDragActive } = useDropzone({
@@ -162,9 +178,17 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
           {getVariantIcon(variantType)}
           <h3 className="font-mono text-sm font-medium">{getVariantLabel(variantType)}</h3>
         </div>
-        <Badge variant="secondary" className="font-mono text-xs">
-          {variant.confidence}% confidence
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="font-mono text-xs">
+            {variant.confidence}% confidence
+          </Badge>
+          {variant.metadata?.windchillCompliance && (
+            <ComplianceBadge 
+              score={variant.metadata.windchillCompliance.score} 
+              isValid={variant.metadata.windchillCompliance.valid}
+            />
+          )}
+        </div>
       </div>
       
       <Progress value={variant.confidence} className="h-1" />

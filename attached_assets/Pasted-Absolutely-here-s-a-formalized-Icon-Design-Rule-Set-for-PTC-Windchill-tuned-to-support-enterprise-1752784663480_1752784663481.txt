@@ -1,0 +1,140 @@
+Absolutely — here’s a formalized Icon Design Rule Set for PTC Windchill, tuned to support enterprise complexity, system-of-systems workflows, and the unique needs of Windchill users in engineering, manufacturing, and configuration-heavy environments.
+
+⸻
+
+🔧 PTC Windchill Icon Design Rule Set
+
+Version: 2025.1
+Audience: Designers, iconographers, engineers, and product owners
+Goal: Establish a durable, semantic, and accessible icon system that improves UX clarity, system performance, and long-term design consistency across Windchill.
+
+⸻
+
+🧭 1. Purpose & Context
+
+Icons in Windchill serve:
+	•	As functional symbols in dense object-based UIs (e.g., CAD trees, BOMs, change controls)
+	•	To reinforce complex workflows involving products, configurations, documents, and manufacturing objects
+	•	To support high-stakes industrial decisions — where visual clarity can reduce errors
+
+Icons must not just look good — they must work under:
+	•	Cognitive load
+	•	Role-based dashboards
+	•	Accessibility constraints
+	•	Varying screen scales (16–48dp)
+
+⸻
+
+🎯 2. Icon Function & Semantic Scope
+
+Icon Type	Role
+Object icons	Represent nouns in Windchill (e.g., workspace, CAD part, document)
+Action icons	Represent verbs (e.g., add, delete, edit, release)
+Status icons	Represent metadata (e.g., locked, under review, recently changed)
+Navigation icons	Represent location/context (e.g., home, folder, dashboard)
+Composite icons	Combine noun + verb (e.g., add to workspace) — max 2 metaphors
+
+Icons must always be:
+	•	Describable in plain language (e.g., “this shows a new document being created”)
+	•	Role-aware (e.g., a designer sees different icons than a manufacturing planner)
+
+⸻
+
+📐 3. Geometry & Layout Rules
+
+Attribute	Specification
+Canvas size	24dp × 24dp
+Live area	20dp × 20dp (centered)
+Padding	2dp minimum on all sides
+Stroke weight	2dp (optically adjusted if needed)
+Stroke style	Solid black, square or clipped terminals
+Corner radius	2dp for outer corners, square for interior joints
+Line alignment	All strokes must be pixel-snapped, no subpixel rendering
+Angle system	45°, 90°, or multiples of 15° only
+
+
+⸻
+
+🧩 4. Shape & Form Principles
+
+Rule	Description
+Primary metaphor only	Each icon must be built around one recognizable metaphor
+Max 2 support shapes	Only include extra forms if they add clear meaning (e.g., tab on folder)
+No abstraction for abstraction’s sake	Forms must reflect real system concepts (e.g., not “magic spark” for automation)
+Use dynamic symmetry	Optical balance is preferred over strict geometric centering
+No 3D, isometric, or shading	Icons must remain flat and orthographic
+No decorative borders or gradients	Unless functionally required (e.g., boundary distinction for file/folder)
+
+
+⸻
+
+✨ 5. Decorative Elements
+
+Element	Rules
+Sparkles	Use 4-point stars; max 1–2 per icon; rotate 15–30°; size 1.5–3dp
+Dots	For activity/state hinting; max 3; 1–1.5dp each; optically spaced
+Pluses/Minuses	Use square-ended lines; must not obscure core shape
+No emojis, glyphs, or cartoon effects	Maintain enterprise tone and system fit
+
+
+⸻
+
+📚 6. Visual Language Fit
+
+System	Harmony Rules
+Material 3	Follow CDS or M3 stroke structure and grid discipline
+IBM Carbon	Respect geometric purity and functional labeling clarity
+Windchill legacy icons	New icons may replace or visually echo old ones but must be scalable and accessible
+Industrial UI needs	Prioritize clarity at small sizes (16dp), strong contrast, and metaphor recognition under load
+
+
+⸻
+
+♿ 7. Accessibility & Clarity
+	•	Contrast Ratio: Minimum 4.5:1 (stroke against background)
+	•	No color-only meaning — color can support state but never carry primary meaning
+	•	Icon must retain identity at 16dp
+	•	Touch target spacing: If used interactively, must be spaced for finger tap (min 48dp bounding box)
+
+⸻
+
+🛠️ 8. Technical Implementation
+
+Output Format	Requirements
+SVG	Clean stroke-based path; no embedded bitmap fills
+Figma Component	Centered 24x24 frame with nested auto-layout where needed
+Naming	snake_case, function-first (add_workspace, delete_object)
+Metadata Tags	Tool type, user role, object type, system domain (e.g., “BOM”, “CAD”, “workflow”)
+Versioning	Each icon must have a tracked design spec and rendering version
+Optical Adjustments	Must be documented if lines or alignment deviate from grid for balance
+
+
+⸻
+
+📈 9. Strategic Design Considerations
+	•	Icons are not decorative — they are semantic UI infrastructure
+	•	Windchill’s complexity requires icons to:
+	•	Disambiguate dense UIs
+	•	Reduce cognitive load across roles
+	•	Scale across object trees, tables, modals, toolbars
+	•	Each new icon must be:
+	•	Justifiable (why it exists)
+	•	Distinguishable (how it differs from neighbors)
+	•	Composable (how it supports workflows)
+
+⸻
+
+✅ 10. Summary: Icons Should…
+
+Do This	Avoid This
+Use clear stroke metaphors	Abstract blobs or gradient shapes
+Maintain 2dp visual rhythm	Jagged pixel outlines or 3D bevels
+Express function, not style	Decorative embellishments
+Work across enterprise roles	Role-agnostic generic glyphs
+Scale down to 16dp cleanly	Over-detailed microglyphs
+Fit Windchill’s industrial tone	Playful, emoji-style graphics
+
+
+⸻
+
+Would you like this turned into a downloadable .md or .pdf format for onboarding and governance? I can also generate example “before and after” icons based on Windchill legacy sets.

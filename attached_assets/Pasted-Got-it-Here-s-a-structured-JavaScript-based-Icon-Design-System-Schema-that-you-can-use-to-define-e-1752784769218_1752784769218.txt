@@ -1,0 +1,104 @@
+Got it. Here’s a structured JavaScript-based Icon Design System Schema that you can use to define, enforce, and scale a branded icon system for PTC Windchill. This schema is both semantic and style-driven, making it ready for use in icon generation tools, Figma plug-ins, or UI component libraries.
+
+⸻
+
+📦 windchillIconStyleSystem.js
+
+export const windchillIconStyleSystem = {
+  brand: "PTC Windchill",
+  version: "2025.2",
+
+  canvas: {
+    size: 24,
+    liveArea: 20,
+    padding: 2,
+    pixelSnapping: true,
+    allowSubpixel: false
+  },
+
+  stroke: {
+    weight: 2,
+    color: "#000000",
+    style: "solid",
+    terminal: ["square", "clipped-45"],
+    cornerRadius: {
+      outer: 2,
+      inner: 0,
+      allowOpticalCorrection: true
+    }
+  },
+
+  geometry: {
+    alignment: "centered",
+    angles: [15, 30, 45, 90, 135, 180],
+    allowedShapes: ["rectangle", "circle", "triangle", "chevron", "line", "star"],
+    allowOverlap: true,
+    maxSupportElements: 2,
+    allowOpticalAsymmetry: true
+  },
+
+  style: {
+    perspective: "orthographic",
+    flat: true,
+    depthSimulation: false,
+    shadow: false,
+    gradient: false,
+    fill: {
+      default: false,
+      allowedFor: ["badge", "active-state"]
+    }
+  },
+
+  decoration: {
+    sparkles: {
+      type: "4-point-star",
+      rotationRange: [15, 30],
+      maxCount: 2,
+      size: [1.5, 3],
+      placement: "top-left or top-right"
+    },
+    dots: {
+      style: "circle",
+      maxCount: 3,
+      size: [1, 1.5],
+      placement: "organic"
+    },
+    plus: {
+      size: 4,
+      stroke: 2,
+      alignment: "center"
+    }
+  },
+
+  accessibility: {
+    minContrastRatio: 4.5,
+    noColorReliance: true,
+    minSize: 16,
+    maxDetailDensity: "medium",
+    touchTargetPadding: 10
+  },
+
+  naming: {
+    format: "snake_case",
+    rules: {
+      actionFirst: true,
+      objectSecond: true,
+      example: "add_workspace"
+    }
+  },
+
+  metadata: {
+    requiredTags: ["domain", "function", "userRole"],
+    domains: ["CAD", "BOM", "workflow", "document", "change", "manufacturing"],
+    roles: ["engineer", "planner", "admin", "operator"]
+  },
+
+  output: {
+    formats: ["SVG", "FigmaComponent", "AI"],
+    svgSettings: {
+      stroke: "2",
+      fill: "none",
+      viewBox: "0 0 24 24"
+    },
+    figma: {
+     
