@@ -1,0 +1,208 @@
+Here’s a full Replit-compatible prompt engine spec that codifies your intent, layers, and design system logic, including explicit icon rules from Google Material Icons and IBM Carbon Icons — all organized into a modular structure that supports 2-pass generation, semantic parsing, and visual validation.
+
+This is designed for a Replit-based AI icon generation system, using Claude, GPT, or local rendering scripts, and follows this model:
+
+⸻
+
+🛠️ icon_prompt_engine.js — For Replit AI-Driven UI Icon System
+
+// ICON PROMPT ENGINE v1.0
+// Author: [You]
+// Purpose: Generate high-quality UI icons using semantic layering, AI prompting, and visual rulesets
+// Based on: IBM Carbon, Google Material Icons, CDS token overlays
+
+// ------------------------------------------------------------
+// 🧠 UNIVERSAL INTENT (SYSTEM THINKING)
+// ------------------------------------------------------------
+
+const system_thinking = {
+  icon_type: "UI_ICON",
+  principles: [
+    "Icons are not illustrations — they are compact functional symbols.",
+    "Design for recognizability and clarity at small sizes (16dp minimum).",
+    "Use strong metaphors that communicate instantly.",
+    "Icons must be stylistically consistent across size, stroke, and shape.",
+    "Flat, 2D orthographic perspective only. No shadows or dimensional illusions.",
+    "Icons must snap to grid, align to keylines, and be pixel-perfect."
+  ],
+  influenced_by: ["IBM Carbon Icons", "Google Material Icons", "FontAwesome"]
+};
+
+// ------------------------------------------------------------
+// 📁 LAYERED STRUCTURE — PROMPT DATA MODEL
+// ------------------------------------------------------------
+
+const iconPrompt = {
+  meta: {
+    name: "add_to_desk",
+    label: "Add Workstation",
+    description: "Create a new desk, node, or workstation in a system layout.",
+    tags: ["add", "desk", "workbench", "workspace", "container"],
+    user_role: "system_admin",
+    function: "creation",
+    context: "toolbar_action"
+  },
+
+  visual_spec: {
+    canvas: "24dp",
+    live_area: "20dp",
+    alignment: "centered",
+    primary_shape: "horizontal rectangle with two vertical legs (desk)",
+    modifier: "plus sign in top right",
+    stroke: {
+      weight: "2dp",
+      color: "#000000",
+      terminals: ["squared", "45_clipped"],
+      corner_radius: {
+        outer: "2dp",
+        inner: "square"
+      }
+    },
+    decorations: {
+      sparkles: false,
+      dots: false
+    },
+    angle_resolution: [15, 30, 45, 90]
+  },
+
+  ruleset: {
+    allow_fill: false,
+    allow_3d: false,
+    max_support_shapes: 2,
+    no_color_dependence: true,
+    contrast_minimum: "4.5:1",
+    naming_convention: "snake_case",
+    export_targets: ["SVG", "Figma", "ReactComponent"]
+  }
+};
+
+// ------------------------------------------------------------
+// 📚 ICON SYSTEM RULES — IBM + GOOGLE COMBINED STANDARDS
+// ------------------------------------------------------------
+
+const ibm_and_google_rules = {
+  // IBM Carbon Best Practices:
+  carbon: {
+    grid: "32x32dp with 24dp live area",
+    stroke_weight: "2dp max",
+    avoid: [
+      "Ambiguous metaphors",
+      "Overlapping fill and stroke",
+      "More than 2 visual elements"
+    ],
+    require: [
+      "Pixel-perfect symmetry",
+      "Flat geometry",
+      "Center-weighted composition"
+    ]
+  },
+
+  // Google Material Design Best Practices:
+  material: {
+    grid: "24x24dp",
+    stroke_weight: "2dp for outlined, 1dp for rounded",
+    do: [
+      "Use common object metaphors",
+      "Maintain consistent stroke joins",
+      "Use rounded corners optically"
+    ],
+    don't: [
+      "Use multiple light sources",
+      "Add text or letters",
+      "Use colors to imply state (without affordance)"
+    ]
+  }
+};
+
+// ------------------------------------------------------------
+// ✅ OUTPUT CHECKER — Post-Render Validation
+// ------------------------------------------------------------
+
+function validateOutput(renderedIcon) {
+  const issues = [];
+
+  if (renderedIcon.stroke_weight !== "2dp") {
+    issues.push("Stroke weight must be exactly 2dp.");
+  }
+  if (renderedIcon.fill_used) {
+    issues.push("Fill is not allowed for this icon.");
+  }
+  if (renderedIcon.corner_radius !== "2dp") {
+    issues.push("Outer corner radius must be 2dp.");
+  }
+  if (!renderedIcon.optically_centered) {
+    issues.push("Icon is not optically centered.");
+  }
+  if (renderedIcon.decorations?.sparkles > 3) {
+    issues.push("Too many sparkles. Max = 3.");
+  }
+
+  return issues.length > 0 ? { valid: false, issues } : { valid: true };
+}
+
+// ------------------------------------------------------------
+// 🔁 REPROMPT / 2ND PASS INSTRUCTION
+// ------------------------------------------------------------
+
+function repromptFix(issues) {
+  return `Please regenerate the icon using the following corrections:\n- ${issues.join(
+    "\n- "
+  )}\nMake sure the icon remains flat, black-stroked, and centered in a 24dp canvas.`;
+}
+
+// ------------------------------------------------------------
+// 🧪 TEST FUNCTION: Use with Claude, GPT, or SVG gen pipeline
+// ------------------------------------------------------------
+
+function generateIconPrompt(iconData) {
+  return `
+System: You are an AI icon designer following strict visual rules from IBM Carbon Icons, Google Material Icons, and a custom enterprise system.
+
+Task: Create a clean, stroke-based UI icon representing: **${iconData.meta.label}**
+
+Function: ${iconData.meta.description}
+Tags: ${iconData.meta.tags.join(", ")}
+
+Visual Spec:
+- Primary Shape: ${iconData.visual_spec.primary_shape}
+- Modifier: ${iconData.visual_spec.modifier}
+- Stroke: ${iconData.visual_spec.stroke.weight}, ${iconData.visual_spec.stroke.color}
+- Grid: ${iconData.visual_spec.canvas}, live area ${iconData.visual_spec.live_area}
+- Alignment: Pixel-snapped, centered
+- Decorations: ${iconData.visual_spec.decorations.sparkles ? "Sparkles allowed" : "No decorations"}
+
+Rules:
+- No fill
+- No color
+- No 3D
+- Must pass accessibility contrast 4.5:1
+- Must match stroke, rhythm, and scale across the icon system
+
+Output format: SVG (24dp × 24dp)
+`;
+}
+
+console.log(generateIconPrompt(iconPrompt));
+
+
+⸻
+
+🧠 Summary of Logic
+
+Layer	What It Does
+system_thinking	Declares universal design law (flatness, function-first, clarity)
+meta	Encodes intent from filename or product UX
+visual_spec	Tells the AI what shapes and modifiers to draw
+ruleset	Validates outputs — and feeds reprompts
+ibm_and_google_rules	Bakes in best practices from trusted icon libraries
+validateOutput()	Can be run after render to force a second pass
+generateIconPrompt()	Main Claude/GPT interface with structured injection
+
+
+⸻
+
+Would you like this bundled into a .replit project or zipped starter kit? I can include:
+	•	icon_prompt_engine.js
+	•	ruleset.json templates
+	•	svg_validator.js
+	•	reprompt_fixer.js helper script

@@ -1,0 +1,107 @@
+Skip to main content
+search
+material_design
+Home
+apps
+Get started
+code
+Develop
+book
+Foundations
+palette
+Styles
+add_circle
+Components
+pages
+Blog
+Icons
+Icons are small symbols to easily identify actions and categories
+
+pause
+Overview
+Designing icons
+Applying icons
+On this page
+Icons
+Resources
+What's new
+link
+Copy link
+Get Material Symbols icons at fonts.google.com/icons. Recolor, resize, and copy and paste icons.
+Use the Material Symbols variable font to enable dynamic styling in product
+You can change the weight, fill, optical size, and grade of variable font icons
+link
+Copy link
+
+pause
+link
+Copy link
+Resources
+link
+Copy link
+Type	Link	Status
+Design
+Icons catalog	Available
+Material Symbols Figma plugin	Available
+link
+Copy link
+What's new
+link
+Copy link
+Copy & paste customized Material Symbols
+You can now copy and paste icons from Google Fonts. Once you search for and select the desired icon, options will appear in the right-hand panel to resize, recolor, and copy the customized icon to clipboard. 
+
+Panel showing options to size, recolor, and copy selected icon.Panel showing options to size, recolor, and copy selected icon.
+Icons can now be copied with a single click
+
+link
+Copy link
+Material Symbols
+The new variable icon font set supports three styles: outlined, rounded, and sharp. All Material Symbols are newly drawn to be pixel-crisp and modernized.
+
+Twelve icons depicted in three styles: outlined, with rounded corners, and sharp.
+Outlined 
+Rounded 
+Sharp
+link
+Copy link
+Adjustable axes
+Material Symbols have four adjustable stylistic variable font attributes called axes. An axis refers to an attribute of a symbol that can be altered to create visual variations. The attributes are: weight, fill, optical size, grade.
+
+
+pause
+A range of symbols shown with the same weight, fill, grade, and optical sizes
+
+link
+Copy link
+Material Symbols Figma plugin
+Easily incorporate Material Symbols into your latest designs on Figma.
+
+Screenshot of Material Symbols plugin in Figma.
+Figma Symbols plugin
+arrow_left_alt
+Previous
+Elevation: Overview
+Up next
+arrow_right_alt
+Icons: Designing icons
+material_design
+Material Design is an adaptable system of guidelines, components, and tools that support the best practices of user interface design. Backed by open-source code, Material Design streamlines collaboration between designers and developers, and helps teams quickly build beautiful products.
+
+Social
+GitHub
+X
+YouTube
+Blog RSS
+Libraries
+Android
+Compose
+Flutter
+Web
+Archived versions
+Material Design 1
+Material Design 2
+Privacy Policy
+Terms of Service
+Join research studies
+Feedback

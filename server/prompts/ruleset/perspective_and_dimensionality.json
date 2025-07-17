@@ -1,0 +1,67 @@
+{
+  "rule_module": "perspective_and_dimensionality",
+  "perspective": "orthographic",
+  "dimensionality": "strictly_2d",
+  "perspective_rules": {
+    "orthographic_only": true,
+    "no_vanishing_points": true,
+    "no_foreshortening": true,
+    "flat_projection": true,
+    "rationale": "Orthographic perspective ensures consistent scaling and universal readability"
+  },
+  "prohibited_effects": {
+    "3d_simulation": false,
+    "isometric_view": false,
+    "perspective_projection": false,
+    "tilt_effects": false,
+    "rotation_beyond_90": false,
+    "depth_layering": false,
+    "rationale": "Any dimensional effects reduce clarity and consistency at small sizes"
+  },
+  "depth_effects": {
+    "shading": false,
+    "highlights": false,
+    "shadows": false,
+    "gradients": false,
+    "stroke_weight_variation": false,
+    "overlapping_for_depth": false,
+    "rationale": "Depth effects violate flat design principles and reduce accessibility"
+  },
+  "allowed_techniques": {
+    "stroke_weight_consistency": true,
+    "optical_corrections": true,
+    "visual_hierarchy_through_size": true,
+    "layering_for_organization": true,
+    "rationale": "These techniques maintain flatness while enabling clear communication"
+  },
+  "view_angle_rules": {
+    "front_view_preferred": true,
+    "side_view_when_clearer": true,
+    "top_view_for_containers": true,
+    "avoid_three_quarter_views": true,
+    "rationale": "Standard views are most universally recognizable"
+  },
+  "composition_constraints": {
+    "single_viewing_plane": true,
+    "consistent_light_source": "none",
+    "no_cast_shadows": true,
+    "uniform_stroke_treatment": true,
+    "flat_color_areas": true
+  },
+  "validation_checkpoints": [
+    "No perspective distortion present",
+    "All elements on same visual plane",
+    "No depth cues through shading",
+    "Consistent stroke weight throughout",
+    "No shadows or highlights",
+    "Flat geometric shapes only"
+  ],
+  "common_violations": [
+    "Isometric or 3D cube representations",
+    "Perspective lines in architecture icons",
+    "Overlapping elements suggesting depth",
+    "Varying stroke weights for depth",
+    "Gradient fills suggesting dimension",
+    "Tilted or rotated complex objects"
+  ]
+}
