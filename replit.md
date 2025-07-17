@@ -10,6 +10,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Intelligent Prompting System** (2025-01-17): Implemented advanced multi-modal analysis that combines:
+  - Filename semantic analysis for detecting actions, objects, and contextual categories
+  - Image vision analysis for identifying visual elements, composition, and complexity
+  - Common UI pattern matching against established icon conventions
+  - Enhanced prompt generation bridging filename intent with visual analysis
 - **Icon Refinement System** (2025-01-17): Added comprehensive UI for iterative icon refinement with 3 methods:
   - UI controls for stroke weight, style variation, and element count
   - Custom prompt input for specific modifications
@@ -34,12 +39,14 @@ Preferred communication style: Simple, everyday language.
 - **File Processing**: Multer for multipart form data handling
 - **AI Integration**: Anthropic Claude 4.0 Sonnet for image-to-icon conversion
 
-### 2-Pass Icon Generation System
-- **Pass 1**: Semantic intent analysis and comprehensive prompt generation
+### Intelligent 2-Pass Icon Generation System
+- **Intelligent Prompting**: Multi-modal analysis combining filename semantics, image vision, and UI pattern matching
+- **Pass 1**: Enhanced semantic intent analysis with intelligent prompt generation
 - **Pass 2**: SVG validation and automatic error correction
 - **Modular Rulesets**: 7 JSON-based rule modules for different aspects
-- **Adaptive Prompts**: Context-aware instructions based on filename analysis
+- **Adaptive Prompts**: Context-aware instructions based on comprehensive analysis
 - **Quality Assurance**: Automated validation with critical/warning/info levels
+- **Pattern Recognition**: Database of common UI icon patterns for better metaphor selection
 
 ### Database Layer
 - **ORM**: Drizzle ORM for type-safe database operations

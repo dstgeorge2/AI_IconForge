@@ -5,6 +5,7 @@ import { generateAdaptivePrompt, QUALITY_ASSURANCE_PROMPTS } from '../prompts/ad
 import { TwoPassIconGenerator } from '../prompts/icon_prompt_engine.js';
 import SVGValidator from '../prompts/validate_output.js';
 import RepromptFixer from '../prompts/reprompt_fixer.js';
+import { generateIntelligentPrompt, IntelligentPromptResult } from './intelligentPrompting';
 
 /*
 <important_code_snippet_instructions>
@@ -95,17 +96,32 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
     const base64Image = imageBuffer.toString('base64');
     const mediaType = getMediaType(fileName);
     
+    // INTELLIGENT PROMPTING: Combine filename + image vision + common patterns
+    const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image);
+    
+    console.log('🧠 Intelligent Prompting - Semantic Analysis:', intelligentPrompt.semanticAnalysis);
+    console.log('👁️ Intelligent Prompting - Image Analysis:', intelligentPrompt.imageAnalysis);
+    console.log('🎯 Intelligent Prompting - Pattern Matches:', intelligentPrompt.patternMatches.slice(0, 3));
+    
     // PASS 1: Generate comprehensive prompt with semantic analysis
     const pass1 = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
     
     console.log('🎯 2-Pass System - Pass 1 Intent:', pass1.semanticIntent);
     console.log('🎨 2-Pass System - Pass 1 Spec:', pass1.visualSpec);
     
-    // Execute Pass 1 with Anthropic
+    // Execute Pass 1 with Anthropic using intelligent prompting
+    const enhancedSystemPrompt = `${pass1.prompt}
+
+${intelligentPrompt.enhancedPrompt}
+
+${intelligentPrompt.contextualInstructions}
+
+CRITICAL: Use the intelligent analysis above to generate a more contextually appropriate icon that bridges filename semantics with visual analysis.`;
+
     const pass1Response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR, // "claude-sonnet-4-20250514"
       max_tokens: 3000,
-      system: pass1.prompt,
+      system: enhancedSystemPrompt,
       messages: [
         {
           role: "user",
@@ -114,6 +130,8 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
               type: "text",
               text: `Convert this image to a Vectra-style UI icon following the complete specification above. 
               
+Use the intelligent analysis combining filename "${fileName}" with image vision to create the most appropriate icon.
+
 REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
             },
             {
@@ -203,7 +221,12 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
         validated: finalValidation.isValid,
         conceptualPurpose: finalResult.conceptualPurpose,
         semanticIntent: pass1.semanticIntent,
-        validationSummary: finalValidation.summary
+        validationSummary: finalValidation.summary,
+        intelligentPrompting: {
+          semanticAnalysis: intelligentPrompt.semanticAnalysis,
+          imageAnalysis: intelligentPrompt.imageAnalysis,
+          patternMatches: intelligentPrompt.patternMatches.slice(0, 3)
+        }
       },
       validationResults: legacyValidation
     };
