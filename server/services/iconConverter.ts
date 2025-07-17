@@ -135,7 +135,31 @@ Focus on clarity, recognizability, and geometric simplicity. The icon must be di
       ]
     });
 
-    const result = JSON.parse(response.content[0].text || '{}');
+    // Extract and parse JSON from Claude's response (handles markdown code blocks)
+    let responseText = response.content[0].text || '{}';
+    
+    // Remove markdown code blocks if present
+    if (responseText.includes('```json')) {
+      responseText = responseText.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    } else if (responseText.includes('```')) {
+      responseText = responseText.replace(/```\s*/, '').replace(/```\s*$/, '');
+    }
+    
+    // Clean up the response text
+    responseText = responseText.trim();
+    
+    // Find JSON object in the response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      responseText = jsonMatch[0];
+    }
+    
+    const result = JSON.parse(responseText);
+    
+    // Validate required fields
+    if (!result.svg || !result.primaryShape) {
+      throw new Error('Claude response missing required fields (svg, primaryShape)');
+    }
     
     // Validate the generated icon
     const validationResults = validateIcon(result.svg);
@@ -155,8 +179,7 @@ Focus on clarity, recognizability, and geometric simplicity. The icon must be di
 
   } catch (error) {
     console.error('Icon conversion error:', error);
-    console.warn('Anthropic API failed, using fallback icon generation');
-    return generateFallbackIcon(fileName);
+    throw new Error(`Failed to convert image to icon: ${error.message}`);
   }
 }
 

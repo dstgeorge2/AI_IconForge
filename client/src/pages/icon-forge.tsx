@@ -20,6 +20,7 @@ export default function IconForge() {
   const [generatedIcon, setGeneratedIcon] = useState<ConversionResult | null>(null);
   const [validationResults, setValidationResults] = useState<ValidationRule[]>([]);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [conversionError, setConversionError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const convertMutation = useMutation({
@@ -33,6 +34,7 @@ export default function IconForge() {
     onSuccess: (data: ConversionResult) => {
       setGeneratedIcon(data);
       setValidationResults(data.validationResults);
+      setConversionError(null);
       
       const isPlaceholder = data.metadata.primaryShape.includes('fallback');
       toast({ 
@@ -43,6 +45,9 @@ export default function IconForge() {
       });
     },
     onError: (error: Error) => {
+      setConversionError(error.message);
+      setGeneratedIcon(null);
+      setValidationResults([]);
       toast({ 
         title: "Conversion failed", 
         description: error.message,
@@ -67,6 +72,9 @@ export default function IconForge() {
       setUploadedImage(e.target?.result as string);
     };
     reader.readAsDataURL(file);
+    
+    // Clear previous error state
+    setConversionError(null);
     
     convertMutation.mutate(file);
   };
@@ -109,6 +117,28 @@ export default function IconForge() {
           <div>→ EXTRACTING GEOMETRIC PRIMITIVES</div>
           <div>→ APPLYING VECTRA STYLE GUIDE</div>
           <div>→ GENERATING SVG OUTPUT</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const ErrorState = () => (
+    <div className="brutal-container">
+      <div className="brutal-header bg-red-600">
+        <h2 className="font-bold text-sm uppercase text-white">⚠ Conversion Failed</h2>
+      </div>
+      <div className="p-4">
+        <div className="text-sm font-bold text-red-600 mb-3">
+          AI CONVERSION ERROR
+        </div>
+        <div className="text-xs text-red-700 bg-red-50 p-3 border border-red-300 mb-3">
+          {conversionError}
+        </div>
+        <div className="text-xs space-y-1">
+          <div>• Check your Anthropic API key</div>
+          <div>• Ensure image is valid and not corrupted</div>
+          <div>• Try a different image format</div>
+          <div>• Check network connection</div>
         </div>
       </div>
     </div>
@@ -191,6 +221,7 @@ export default function IconForge() {
             />
             
             {convertMutation.isPending && <ProcessingStatus />}
+            {conversionError && <ErrorState />}
             
             <ExportControls 
               svg={generatedIcon?.svg || null}
