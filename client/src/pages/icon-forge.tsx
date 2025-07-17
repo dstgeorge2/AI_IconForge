@@ -6,6 +6,7 @@ import DropZone from '@/components/DropZone';
 import IconPreview from '@/components/IconPreview';
 import ValidationReport from '@/components/ValidationReport';
 import ExportControls from '@/components/ExportControls';
+import IconRefinementPanel from '@/components/IconRefinementPanel';
 import { validateIcon } from '@/lib/iconValidation';
 import { ValidationRule } from '@/lib/styleGuide';
 
@@ -21,6 +22,7 @@ export default function IconForge() {
   const [validationResults, setValidationResults] = useState<ValidationRule[]>([]);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
+  const [showRefinementPanel, setShowRefinementPanel] = useState(false);
   const { toast } = useToast();
 
   const convertMutation = useMutation({
@@ -35,6 +37,7 @@ export default function IconForge() {
       setGeneratedIcon(data);
       setValidationResults(data.validationResults);
       setConversionError(null);
+      setShowRefinementPanel(true);
       
       const isPlaceholder = data.metadata.primaryShape.includes('fallback');
       toast({ 
@@ -77,6 +80,21 @@ export default function IconForge() {
     setConversionError(null);
     
     convertMutation.mutate(file);
+  };
+
+  const handleRefinedIcon = (refinedResult: any) => {
+    setGeneratedIcon({
+      id: refinedResult.id,
+      svg: refinedResult.svg,
+      metadata: refinedResult.metadata,
+      validationResults: refinedResult.validationResults
+    });
+    setValidationResults(refinedResult.validationResults);
+    
+    toast({
+      title: "Icon refined successfully",
+      description: `Applied ${refinedResult.changes.length} refinements`
+    });
   };
 
   const UploadedImagePreview = () => (
@@ -243,6 +261,24 @@ export default function IconForge() {
             <SvgOutput />
           </div>
         </div>
+
+        {/* Refinement Panel */}
+        {showRefinementPanel && generatedIcon && (
+          <div className="mt-8">
+            <div className="brutal-container">
+              <div className="brutal-header">
+                <h2 className="font-bold text-sm uppercase">03. Icon Refinement</h2>
+              </div>
+              <div className="p-4">
+                <IconRefinementPanel
+                  originalSvg={generatedIcon.svg}
+                  originalMetadata={generatedIcon.metadata}
+                  onRefinedIcon={handleRefinedIcon}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Technical Specifications */}
         <div className="mt-8">

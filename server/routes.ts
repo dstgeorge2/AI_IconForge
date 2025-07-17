@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { convertImageToIcon } from "./services/iconConverter";
+import IconRefinementService from "./services/iconRefinement";
 import { insertIconConversionSchema } from "@shared/schema";
 import multer from "multer";
 import { z } from "zod";
@@ -19,6 +20,8 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize refinement service
+  const refinementService = new IconRefinementService();
   // Convert image to icon
   app.post('/api/convert-icon', upload.single('image'), async (req: Request, res: Response) => {
     try {
@@ -73,6 +76,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
+  });
+
+  // Refine existing icon
+  app.post('/api/refine-icon', async (req: Request, res: Response) => {
+    try {
+      const refinementRequest = z.object({
+        originalSvg: z.string(),
+        originalMetadata: z.object({}).passthrough(),
+        refinementType: z.enum(['ui_controls', 'custom_prompt', 'preset']),
+        parameters: z.object({
+          strokeWeight: z.number().optional(),
+          styleVariation: z.enum(['minimal', 'detailed', 'bold']).optional(),
+          elementCount: z.enum(['fewer', 'more', 'same']).optional(),
+          customPrompt: z.string().optional(),
+          preset: z.string().optional()
+        }),
+        userContext: z.string().optional()
+      }).parse(req.body);
+
+      const result = await refinementService.refineIcon(refinementRequest);
+      
+      // Store the refined conversion
+      const refinedConversion = await storage.createIconConversion({
+        originalImageName: `refined_${Date.now()}.svg`,
+        svgCode: result.refinedSvg,
+        validationResults: result.validationResults,
+        metadata: result.refinedMetadata
+      });
+
+      res.json({
+        id: refinedConversion.id,
+        svg: result.refinedSvg,
+        metadata: result.refinedMetadata,
+        validationResults: result.validationResults,
+        changes: result.changes,
+        refinementHistory: result.refinementHistory
+      });
+    } catch (error) {
+      console.error('Icon refinement error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Get refinement presets
+  app.get('/api/refinement-presets', (req: Request, res: Response) => {
+    res.json(IconRefinementService.REFINEMENT_PRESETS);
   });
 
   const httpServer = createServer(app);
