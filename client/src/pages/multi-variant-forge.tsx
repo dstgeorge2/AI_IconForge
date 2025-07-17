@@ -177,8 +177,26 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
                   >
                     <div 
                       key={`${variantType}-${variant.id}-${size}`}
-                      style={{ width: size, height: size }}
-                      dangerouslySetInnerHTML={{ __html: variant.svg }}
+                      style={{ 
+                        width: size, 
+                        height: size,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      dangerouslySetInnerHTML={{ 
+                        __html: (() => {
+                          // Extract the original viewBox from the SVG
+                          const viewBoxMatch = variant.svg.match(/viewBox="([^"]+)"/);
+                          const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
+                          
+                          // Replace the opening SVG tag with proper scaling
+                          return variant.svg.replace(
+                            /<svg[^>]*>/,
+                            `<svg width="${size}" height="${size}" viewBox="${viewBox}" style="display: block;">`
+                          );
+                        })()
+                      }}
                     />
                   </div>
                   <span className="text-xs font-mono text-gray-500">{size}dp</span>
