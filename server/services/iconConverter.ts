@@ -97,7 +97,7 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
     const mediaType = getMediaType(fileName);
     
     // INTELLIGENT PROMPTING: Combine filename + image vision + common patterns
-    const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image);
+    const intelligentPrompt = await generateIntelligentPrompt(fileName, base64Image, mediaType);
     
     console.log('🧠 Intelligent Prompting - Semantic Analysis:', intelligentPrompt.semanticAnalysis);
     console.log('👁️ Intelligent Prompting - Image Analysis:', intelligentPrompt.imageAnalysis);

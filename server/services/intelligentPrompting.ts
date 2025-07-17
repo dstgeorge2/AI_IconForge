@@ -71,7 +71,13 @@ const UI_ICON_PATTERNS = {
     'copy': { patterns: ['duplicate', 'clone', 'multiple', 'stack'], geometric: 'two overlapping rectangles' },
     'move': { patterns: ['drag', 'relocate', 'transfer', 'position'], geometric: 'four arrows pointing outward from center' },
     'expand': { patterns: ['grow', 'maximize', 'fullscreen', 'larger'], geometric: 'diagonal arrows pointing outward' },
-    'collapse': { patterns: ['shrink', 'minimize', 'compress', 'smaller'], geometric: 'diagonal arrows pointing inward' }
+    'collapse': { patterns: ['shrink', 'minimize', 'compress', 'smaller'], geometric: 'diagonal arrows pointing inward' },
+    'sort': { patterns: ['arrange', 'order', 'organize', 'rank'], geometric: 'horizontal lines of varying lengths' },
+    'filter': { patterns: ['sieve', 'screen', 'refine', 'select'], geometric: 'funnel or filter shape' },
+    'play': { patterns: ['start', 'begin', 'run', 'execute'], geometric: 'right-pointing triangle' },
+    'pause': { patterns: ['stop', 'halt', 'suspend', 'break'], geometric: 'two vertical rectangles' },
+    'lock': { patterns: ['secure', 'protect', 'encrypt', 'private'], geometric: 'padlock with curved shackle' },
+    'unlock': { patterns: ['open', 'access', 'decrypt', 'public'], geometric: 'open padlock' }
   },
   
   objects: {
@@ -112,25 +118,31 @@ export function analyzeFilename(filename: string): SemanticAnalysis {
   const cleanName = filename.toLowerCase().replace(/[_-]/g, ' ').replace(/\.(png|jpg|jpeg|gif|svg)$/i, '');
   const words = cleanName.split(' ').filter(word => word.length > 0);
   
-  // Action detection patterns
+  // Enhanced action detection patterns with more variations
   const actionPatterns = {
-    'add': /\b(add|create|new|plus|insert)\b/i,
-    'edit': /\b(edit|modify|change|update|pencil)\b/i,
-    'delete': /\b(delete|remove|trash|bin|clear)\b/i,
-    'save': /\b(save|store|disk|floppy)\b/i,
-    'search': /\b(search|find|lookup|magnify)\b/i,
-    'menu': /\b(menu|hamburger|nav|navigation)\b/i,
-    'settings': /\b(settings|config|gear|cog|options)\b/i,
-    'close': /\b(close|x|cancel|exit)\b/i,
-    'move': /\b(move|drag|relocate|transfer)\b/i,
-    'view': /\b(view|see|look|show|display)\b/i,
-    'share': /\b(share|send|export|distribute)\b/i,
-    'copy': /\b(copy|duplicate|clone)\b/i,
-    'download': /\b(download|get|fetch|pull)\b/i,
-    'upload': /\b(upload|send|push|post)\b/i,
-    'refresh': /\b(refresh|reload|sync|update)\b/i,
-    'expand': /\b(expand|maximize|grow|fullscreen)\b/i,
-    'collapse': /\b(collapse|minimize|shrink|compress)\b/i
+    'add': /\b(add|create|new|plus|insert|make|build)\b/i,
+    'edit': /\b(edit|modify|change|update|pencil|alter|revise)\b/i,
+    'delete': /\b(delete|remove|trash|bin|clear|erase|destroy)\b/i,
+    'save': /\b(save|store|disk|floppy|keep|preserve)\b/i,
+    'search': /\b(search|find|lookup|magnify|seek|locate)\b/i,
+    'menu': /\b(menu|hamburger|nav|navigation|options|list)\b/i,
+    'settings': /\b(settings|config|gear|cog|options|preferences|setup)\b/i,
+    'close': /\b(close|x|cancel|exit|dismiss|shut)\b/i,
+    'move': /\b(move|drag|relocate|transfer|shift|position)\b/i,
+    'view': /\b(view|see|look|show|display|preview|watch)\b/i,
+    'share': /\b(share|send|export|distribute|broadcast|publish)\b/i,
+    'copy': /\b(copy|duplicate|clone|replicate)\b/i,
+    'download': /\b(download|get|fetch|pull|retrieve)\b/i,
+    'upload': /\b(upload|send|push|post|submit)\b/i,
+    'refresh': /\b(refresh|reload|sync|update|renew)\b/i,
+    'expand': /\b(expand|maximize|grow|fullscreen|enlarge)\b/i,
+    'collapse': /\b(collapse|minimize|shrink|compress|fold)\b/i,
+    'sort': /\b(sort|order|arrange|organize|rank)\b/i,
+    'filter': /\b(filter|sieve|screen|refine)\b/i,
+    'play': /\b(play|start|begin|run|execute)\b/i,
+    'pause': /\b(pause|stop|halt|suspend)\b/i,
+    'lock': /\b(lock|secure|protect|encrypt)\b/i,
+    'unlock': /\b(unlock|open|access|decrypt)\b/i
   };
   
   // Object detection patterns
@@ -295,7 +307,7 @@ function extractVisualPatterns(cleanName: string, action: string, object: string
 }
 
 // Analyze image using vision API
-export async function analyzeImageVision(imageBase64: string): Promise<ImageVisionAnalysis> {
+export async function analyzeImageVision(imageBase64: string, mediaType: string): Promise<ImageVisionAnalysis> {
   try {
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
@@ -320,7 +332,7 @@ Respond in JSON format with keys: primarySubject, visualElements, colors, compos
             type: "image",
             source: {
               type: "base64",
-              media_type: "image/jpeg",
+              media_type: mediaType,
               data: imageBase64
             }
           }
@@ -357,57 +369,109 @@ Respond in JSON format with keys: primarySubject, visualElements, colors, compos
 export function findPatternMatches(semanticAnalysis: SemanticAnalysis, imageAnalysis: ImageVisionAnalysis): CommonPatternMatch[] {
   const matches: CommonPatternMatch[] = [];
   
-  // Check action patterns
+  // Check action patterns - high confidence for detected actions
   if (UI_ICON_PATTERNS.actions[semanticAnalysis.detectedAction]) {
     const actionPattern = UI_ICON_PATTERNS.actions[semanticAnalysis.detectedAction];
     matches.push({
       pattern: `action:${semanticAnalysis.detectedAction}`,
-      confidence: 0.8,
+      confidence: 0.9,
       iconSuggestion: actionPattern.geometric,
       geometricApproach: actionPattern.geometric
     });
   }
   
-  // Check object patterns
+  // Check object patterns - high confidence for detected objects
   if (UI_ICON_PATTERNS.objects[semanticAnalysis.detectedObject]) {
     const objectPattern = UI_ICON_PATTERNS.objects[semanticAnalysis.detectedObject];
     matches.push({
       pattern: `object:${semanticAnalysis.detectedObject}`,
-      confidence: 0.9,
+      confidence: 0.95,
       iconSuggestion: objectPattern.geometric,
       geometricApproach: objectPattern.geometric
     });
   }
   
-  // Check tech patterns
+  // Check tech patterns - high confidence for tech objects
   if (UI_ICON_PATTERNS.tech[semanticAnalysis.detectedObject]) {
     const techPattern = UI_ICON_PATTERNS.tech[semanticAnalysis.detectedObject];
     matches.push({
       pattern: `tech:${semanticAnalysis.detectedObject}`,
-      confidence: 0.85,
+      confidence: 0.9,
       iconSuggestion: techPattern.geometric,
       geometricApproach: techPattern.geometric
     });
   }
   
-  // Check visual element matches
-  imageAnalysis.visualElements.forEach(element => {
-    const elementLower = element.toLowerCase();
+  // Enhanced filename pattern matching - check all filename words
+  const filenameWords = semanticAnalysis.filename.toLowerCase().split(/[_\-\s\.]+/);
+  for (const word of filenameWords) {
+    if (word.length < 3) continue; // Skip short words
+    
+    // Check against all pattern categories
     for (const [category, patterns] of Object.entries(UI_ICON_PATTERNS)) {
       for (const [key, pattern] of Object.entries(patterns)) {
-        if (pattern.patterns.some(p => elementLower.includes(p))) {
+        if (pattern.patterns.some(p => word.includes(p) || p.includes(word))) {
           matches.push({
-            pattern: `visual:${element}`,
-            confidence: 0.6,
+            pattern: `filename:${word}→${key}`,
+            confidence: 0.8,
             iconSuggestion: pattern.geometric,
             geometricApproach: pattern.geometric
           });
         }
       }
     }
-  });
+  }
+  
+  // Visual element matching - only if vision analysis worked
+  if (imageAnalysis.primarySubject !== 'unknown') {
+    imageAnalysis.visualElements.forEach(element => {
+      const elementLower = element.toLowerCase();
+      for (const [category, patterns] of Object.entries(UI_ICON_PATTERNS)) {
+        for (const [key, pattern] of Object.entries(patterns)) {
+          if (pattern.patterns.some(p => elementLower.includes(p))) {
+            matches.push({
+              pattern: `visual:${element}`,
+              confidence: 0.7,
+              iconSuggestion: pattern.geometric,
+              geometricApproach: pattern.geometric
+            });
+          }
+        }
+      }
+    });
+  }
+  
+  // Fallback pattern matching based on contextual category
+  if (matches.length === 0) {
+    const fallbackPattern = getFallbackPattern(semanticAnalysis.contextualCategory, semanticAnalysis.detectedAction);
+    if (fallbackPattern) {
+      matches.push(fallbackPattern);
+    }
+  }
   
   return matches.sort((a, b) => b.confidence - a.confidence);
+}
+
+// Fallback pattern generation
+function getFallbackPattern(category: string, action: string): CommonPatternMatch | null {
+  const fallbackPatterns = {
+    ui: { geometric: 'simple geometric interface element', confidence: 0.6 },
+    tech: { geometric: 'technical geometric symbol', confidence: 0.6 },
+    objects: { geometric: 'simplified object representation', confidence: 0.5 },
+    abstract: { geometric: 'abstract symbolic representation', confidence: 0.4 },
+    people: { geometric: 'human silhouette with circle head', confidence: 0.7 },
+    nature: { geometric: 'natural form simplified to geometric shapes', confidence: 0.5 }
+  };
+  
+  const pattern = fallbackPatterns[category];
+  if (!pattern) return null;
+  
+  return {
+    pattern: `fallback:${category}`,
+    confidence: pattern.confidence,
+    iconSuggestion: pattern.geometric,
+    geometricApproach: pattern.geometric
+  };
 }
 
 // Generate enhanced prompt combining all analyses
@@ -521,12 +585,12 @@ ${complexityInstructions[imageAnalysis.complexity]}
 }
 
 // Main intelligent prompting function
-export async function generateIntelligentPrompt(filename: string, imageBase64: string): Promise<IntelligentPromptResult> {
+export async function generateIntelligentPrompt(filename: string, imageBase64: string, mediaType: string = 'image/jpeg'): Promise<IntelligentPromptResult> {
   // Step 1: Analyze filename semantics
   const semanticAnalysis = analyzeFilename(filename);
   
   // Step 2: Analyze image vision
-  const imageAnalysis = await analyzeImageVision(imageBase64);
+  const imageAnalysis = await analyzeImageVision(imageBase64, mediaType);
   
   // Step 3: Find pattern matches
   const patternMatches = findPatternMatches(semanticAnalysis, imageAnalysis);
