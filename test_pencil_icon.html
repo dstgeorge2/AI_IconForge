@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pencil Icon Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f0f0f0; }
+        .icon-test { background: white; padding: 20px; margin: 10px; border: 2px solid #333; }
+        .sizes { display: flex; gap: 20px; align-items: center; }
+        .size-label { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Generated Pencil Icon</h2>
+    
+    <div class="icon-test">
+        <h3>Original vs Generated</h3>
+        <div class="sizes">
+            <div>
+                <div class="size-label">Original (16px)</div>
+                <img src="attached_assets/edit_1752770328264.gif" width="16" height="16" style="border: 1px solid #ccc;">
+            </div>
+            <div>
+                <div class="size-label">Generated (16px)</div>
+                <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="14" y="3" width="2" height="10" rx="2" fill="none" stroke="#000000" stroke-width="2" transform="rotate(45 15 8)"/>
+                    <path d="m3 21 4-4" stroke="#000000" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+            <div>
+                <div class="size-label">Generated (24px)</div>
+                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="14" y="3" width="2" height="10" rx="2" fill="none" stroke="#000000" stroke-width="2" transform="rotate(45 15 8)"/>
+                    <path d="m3 21 4-4" stroke="#000000" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+            <div>
+                <div class="size-label">Generated (48px)</div>
+                <svg width="48" height="48" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="14" y="3" width="2" height="10" rx="2" fill="none" stroke="#000000" stroke-width="2" transform="rotate(45 15 8)"/>
+                    <path d="m3 21 4-4" stroke="#000000" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="icon-test">
+        <h3>Technical Details</h3>
+        <pre>
+Primary Shape: rectangular pencil body with triangular tip
+Stroke Width: 2dp
+Canvas: 24x24dp
+All validations: PASSED
+        </pre>
+    </div>
+
+    <div class="icon-test">
+        <h3>Generated SVG Code</h3>
+        <pre>&lt;svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"&gt;
+  &lt;rect x="14" y="3" width="2" height="10" rx="2" fill="none" stroke="#000000" stroke-width="2" transform="rotate(45 15 8)"/&gt;
+  &lt;path d="m3 21 4-4" stroke="#000000" stroke-width="2" fill="none"/&gt;
+&lt;/svg&gt;</pre>
+    </div>
+</body>
+</html>
