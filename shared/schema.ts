@@ -73,6 +73,6 @@ export type MultiVariantIconResponse = {
     'ui-intent': IconVariantResponse;
     'material': IconVariantResponse;
     'carbon': IconVariantResponse;
-    'pictogram': IconVariantResponse;
+    'filled': IconVariantResponse;
   };
 };

@@ -37,6 +37,10 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
 
   const handleCopy = async () => {
     try {
+      if (!variant || !variant.svg) {
+        toast({ title: 'No SVG content to copy', variant: 'destructive' });
+        return;
+      }
       await navigator.clipboard.writeText(variant.svg);
       setCopied(true);
       toast({ title: 'Copied to clipboard!' });
@@ -47,6 +51,10 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
   };
 
   const handleDownload = () => {
+    if (!variant || !variant.svg) {
+      toast({ title: 'No SVG content to download', variant: 'destructive' });
+      return;
+    }
     const blob = new Blob([variant.svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -187,6 +195,10 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
                       }}
                       dangerouslySetInnerHTML={{ 
                         __html: (() => {
+                          if (!variant || !variant.svg) {
+                            return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="display: block;"><rect x="2" y="2" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="12" text-anchor="middle" font-size="8" fill="currentColor">Error</text></svg>`;
+                          }
+                          
                           // Extract the original viewBox from the SVG
                           const viewBoxMatch = variant.svg.match(/viewBox="([^"]+)"/);
                           const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
@@ -522,24 +534,26 @@ export default function MultiVariantForge() {
   const handleDownloadAll = () => {
     if (!multiVariantResult) return;
     
-    const activeVariants = ['one-to-one', 'ui-intent', 'material', 'carbon', 'pictogram'];
+    const activeVariants = ['one-to-one', 'ui-intent', 'material', 'carbon', 'filled'];
     
     activeVariants.forEach(type => {
       const variant = multiVariantResult.variants[type];
-      const blob = new Blob([variant.svg], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${multiVariantResult.originalImageName.split('.')[0]}_${type}.svg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (variant && variant.svg) {
+        const blob = new Blob([variant.svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${multiVariantResult.originalImageName.split('.')[0]}_${type}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
     });
     
     toast({
       title: 'All icons downloaded!',
-      description: 'Downloaded 5 SVG variants'
+      description: 'Downloaded SVG variants'
     });
   };
 
