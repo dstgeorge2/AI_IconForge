@@ -33,3 +33,34 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type IconConversion = typeof iconConversions.$inferSelect;
 export type InsertIconConversion = z.infer<typeof insertIconConversionSchema>;
+
+// Icon refinement request schema
+export const iconRefinementSchema = z.object({
+  originalIconId: z.number(),
+  feedback: z.string().min(1).max(500),
+  refinementType: z.enum(['simplification', 'style_change', 'element_modification', 'design_system', 'general']).optional(),
+});
+
+export type IconRefinementRequest = z.infer<typeof iconRefinementSchema>;
+
+// Complexity analysis schema
+export const complexityAnalysisSchema = z.object({
+  complexity_score: z.number().min(0).max(1),
+  rating: z.enum(['low', 'medium', 'high']),
+  flags: z.array(z.string()),
+  recommend_simplification: z.boolean(),
+  alternatives: z.array(z.object({
+    type: z.string(),
+    title: z.string(),
+    description: z.string(),
+    action: z.string(),
+    confidence: z.number()
+  })),
+  feedback: z.array(z.object({
+    type: z.string(),
+    message: z.string(),
+    severity: z.enum(['info', 'warning', 'error'])
+  }))
+});
+
+export type ComplexityAnalysis = z.infer<typeof complexityAnalysisSchema>;

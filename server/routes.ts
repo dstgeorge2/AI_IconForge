@@ -2,7 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { convertImageToIcon } from "./services/iconConverter";
-import { insertIconConversionSchema } from "@shared/schema";
+import { insertIconConversionSchema, iconRefinementSchema } from "@shared/schema";
+import RefinementEngine from './prompts/refinement_engine.js';
 import multer from "multer";
 import { z } from "zod";
 
@@ -71,6 +72,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversions = await storage.getRecentIconConversions(limit);
       res.json(conversions);
     } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Icon refinement endpoint
+  app.post('/api/refine-icon', async (req: Request, res: Response) => {
+    try {
+      const refinementData = iconRefinementSchema.parse(req.body);
+      
+      // Get original icon
+      const originalIcon = await storage.getIconConversion(refinementData.originalIconId);
+      if (!originalIcon) {
+        return res.status(404).json({ error: 'Original icon not found' });
+      }
+
+      // Initialize refinement engine
+      const refinementEngine = new (RefinementEngine as any)();
+      
+      // Process user feedback
+      const refinementResult = await refinementEngine.processUserFeedback(
+        originalIcon,
+        refinementData.feedback,
+        (originalIcon.metadata as any)?.semanticIntent
+      );
+
+      res.json({
+        refinementType: refinementResult.type,
+        reasoning: refinementResult.reasoning,
+        prompt: refinementResult.prompt,
+        suggestions: refinementResult.suggestions || [],
+        modifications: refinementResult.modifications || [],
+        changes: refinementResult.changes || []
+      });
+    } catch (error) {
+      console.error('Icon refinement error:', error);
       res.status(500).json({ error: (error as Error).message });
     }
   });

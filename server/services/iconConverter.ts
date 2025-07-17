@@ -5,6 +5,8 @@ import { generateAdaptivePrompt, QUALITY_ASSURANCE_PROMPTS } from '../prompts/ad
 import { TwoPassIconGenerator } from '../prompts/icon_prompt_engine.js';
 import SVGValidator from '../prompts/validate_output.js';
 import RepromptFixer from '../prompts/reprompt_fixer.js';
+import ComplexityAnalyzer from '../prompts/complexity_analyzer.js';
+import RefinementEngine from '../prompts/refinement_engine.js';
 
 /*
 <important_code_snippet_instructions>
@@ -86,10 +88,12 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
   }
 
   try {
-    // Initialize 2-pass generation system
+    // Initialize 2-pass generation system with complexity analysis
     const generator = new TwoPassIconGenerator();
     const validator = new SVGValidator();
     const repromptFixer = new RepromptFixer();
+    const complexityAnalyzer = new ComplexityAnalyzer();
+    const refinementEngine = new RefinementEngine();
     
     // Convert buffer to base64
     const base64Image = imageBuffer.toString('base64');
@@ -189,8 +193,22 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
       console.log('✅ 2-Pass System - Pass 1 successful, no corrections needed');
     }
     
+    // Analyze icon complexity and generate improvement suggestions
+    const complexityAnalysis = complexityAnalyzer.analyzeComplexity(finalResult.svg, finalResult);
+    const alternatives = refinementEngine.generateComplexityBasedAlternatives(
+      complexityAnalysis.complexity_score, 
+      pass1.semanticIntent
+    );
+    
     // Convert validation results to legacy format
     const legacyValidation = convertValidationToLegacy(finalValidation);
+    
+    console.log('🧠 Complexity Analysis:', {
+      score: complexityAnalysis.complexity_score,
+      rating: complexityAnalysis.rating,
+      flags: complexityAnalysis.flags.length,
+      alternatives: alternatives.length
+    });
     
     return {
       svg: finalResult.svg,
@@ -207,7 +225,10 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
         originalFilename: fileName,
         suggestedFilename: pass1.semanticIntent.filename + '.svg'
       },
-      validationResults: legacyValidation
+      validationResults: legacyValidation,
+      complexityAnalysis: complexityAnalysis,
+      alternatives: alternatives,
+      canRefine: complexityAnalysis.complexity_score > 0.4
     };
 
   } catch (error) {
