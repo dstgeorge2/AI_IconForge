@@ -358,14 +358,18 @@ export default function MultiVariantForge() {
       return response.json();
     },
     onSuccess: (data, variables) => {
+      console.log('Revision success:', data, variables);
       // Update the specific variant in the results
       if (multiVariantResult) {
-        setMultiVariantResult(prev => ({
-          ...prev!,
+        const updatedResult = {
+          ...multiVariantResult,
           variants: {
-            ...prev!.variants,
+            ...multiVariantResult.variants,
             [variables.variantType]: {
-              ...data,
+              id: data.id,
+              svg: data.svg,
+              explanation: data.explanation,
+              confidence: data.confidence,
               metadata: {
                 ...data.metadata,
                 revised: true,
@@ -373,7 +377,9 @@ export default function MultiVariantForge() {
               }
             }
           }
-        }));
+        };
+        console.log('Updated result:', updatedResult);
+        setMultiVariantResult(updatedResult);
       }
       
       // Reset revision interface
