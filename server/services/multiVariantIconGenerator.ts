@@ -966,13 +966,17 @@ The icon must:
     });
 
     const result = response.content[0].type === 'tool_use' ? response.content[0].input : null;
-    if (!result) {
-      throw new Error('No tool response received');
+    if (!result || !result.svg) {
+      throw new Error('No tool response received or missing SVG');
     }
 
-    // Validate the generated icon
+    // Enhanced validation pipeline
+    const svgValidation = await validateSVG(result.svg);
     const validation = validateIcon(result.svg, 'generic');
     const previewValidation = await validateIconAtMultipleSizes(result.svg);
+    
+    // Use validated SVG if available
+    const finalSVG = svgValidation.normalizedSVG || result.svg;
     
     // Adjust confidence based on validation results
     let adjustedConfidence = result.confidence;
@@ -982,13 +986,14 @@ The icon must:
     if (previewValidation.overallScore < 70) {
       adjustedConfidence = Math.max(0, adjustedConfidence - 20);
     }
+    adjustedConfidence = Math.min(adjustedConfidence, svgValidation.confidence);
 
     return {
       variant: {
         id: 0,
         conversionId: 0,
         variantType: 'text-based',
-        svgCode: result.svg,
+        svgCode: finalSVG,
         explanation: result.explanation,
         confidence: adjustedConfidence,
         metadata: { 
@@ -997,11 +1002,12 @@ The icon must:
           textBased: true,
           metaphor: result.metaphor,
           validation: validation,
-          previewValidation: previewValidation
+          previewValidation: previewValidation,
+          svgValidation: svgValidation
         },
         createdAt: new Date()
       },
-      svg: result.svg,
+      svg: finalSVG,
       explanation: result.explanation,
       confidence: adjustedConfidence,
       metadata: { 
@@ -1010,7 +1016,8 @@ The icon must:
         textBased: true,
         metaphor: result.metaphor,
         validation: validation,
-        previewValidation: previewValidation
+        previewValidation: previewValidation,
+        svgValidation: svgValidation
       }
     };
   } catch (error) {
