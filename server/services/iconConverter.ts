@@ -2,9 +2,6 @@ import Anthropic from '@anthropic-ai/sdk';
 import { VECTRA_STYLE_GUIDE_PROMPT, COMMON_ICON_PATTERNS } from '../prompts/iconStyleGuide';
 import { IMAGE_ANALYSIS_PROMPTS, QUALITY_ENHANCEMENT_PROMPTS, COMMON_MISTAKES_TO_AVOID } from '../prompts/contextualPrompts';
 import { generateAdaptivePrompt, QUALITY_ASSURANCE_PROMPTS } from '../prompts/adaptivePrompts';
-import { TwoPassIconGenerator } from '../prompts/icon_prompt_engine.js';
-import SVGValidator from '../prompts/validate_output.js';
-import RepromptFixer from '../prompts/reprompt_fixer.js';
 
 /*
 <important_code_snippet_instructions>
@@ -86,35 +83,66 @@ export async function convertImageToIcon(imageBuffer: Buffer, fileName: string):
   }
 
   try {
-    // Initialize 2-pass generation system
-    const generator = new TwoPassIconGenerator();
-    const validator = new SVGValidator();
-    const repromptFixer = new RepromptFixer();
-    
     // Convert buffer to base64
     const base64Image = imageBuffer.toString('base64');
     const mediaType = getMediaType(fileName);
     
-    // PASS 1: Generate comprehensive prompt with semantic analysis
-    const pass1 = await generator.generateIcon(fileName, 'Uploaded image for icon conversion');
+    // Generate adaptive prompt based on image context
+    const adaptivePrompt = generateAdaptivePrompt(fileName);
     
-    console.log('🎯 2-Pass System - Pass 1 Intent:', pass1.semanticIntent);
-    console.log('🎨 2-Pass System - Pass 1 Spec:', pass1.visualSpec);
-    
-    // Execute Pass 1 with Anthropic
-    const pass1Response = await anthropic.messages.create({
+    // Create comprehensive system prompt
+    const systemPrompt = `${VECTRA_STYLE_GUIDE_PROMPT}
+
+${adaptivePrompt}
+
+${COMMON_MISTAKES_TO_AVOID}
+
+## EXAMPLE PATTERNS
+Here are proven icon patterns that work well:
+${Object.entries(COMMON_ICON_PATTERNS).map(([name, svg]) => `${name.toUpperCase()}: ${svg}`).join('\n')}
+
+## QUALITY GUIDELINES
+${Object.values(QUALITY_ENHANCEMENT_PROMPTS).join('\n\n')}
+
+${QUALITY_ASSURANCE_PROMPTS.preGeneration}
+
+Remember: Your output must be a valid JSON object with no additional text or formatting.`;
+
+    const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR, // "claude-sonnet-4-20250514"
       max_tokens: 3000,
-      system: pass1.prompt,
+      system: systemPrompt,
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: `Convert this image to a Vectra-style UI icon following the complete specification above. 
-              
-REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
+              text: `Analyze this image and convert it to a Vectra-style UI icon following the complete style guide above.
+
+DETAILED ANALYSIS PROCESS:
+1. VISUAL ANALYSIS: Examine the image for primary subject, secondary elements, and context
+2. CONCEPT IDENTIFICATION: What is the core concept or function this image represents?
+3. METAPHOR SELECTION: Choose the most universally recognized icon metaphor
+4. GEOMETRIC REDUCTION: Break complex forms into simple geometric primitives
+5. COMPOSITION PLANNING: Position elements within 20x20dp live area for optimal balance
+6. STROKE APPLICATION: Apply consistent 2dp stroke width throughout
+7. VALIDATION: Verify against all Vectra style guide rules
+
+CRITICAL SUCCESS FACTORS:
+- Immediate recognition at 16dp size
+- Cultural universality (works globally)
+- Geometric precision (all coordinates are integers)
+- Consistent 2dp stroke width
+- Proper live area utilization (20x20dp centered)
+- No forbidden effects (gradients, shadows, filters)
+
+QUALITY VALIDATION:
+Before finalizing, verify the icon passes the "squint test" - when you squint at it, the essential form should still be instantly recognizable.
+
+${QUALITY_ASSURANCE_PROMPTS.postGeneration}
+
+Return ONLY the JSON object with no additional text or formatting.`
             },
             {
               type: "image",
@@ -129,145 +157,52 @@ REMEMBER: Return ONLY the JSON object with no additional text or formatting.`
       ]
     });
 
-    // Parse Pass 1 response
-    let pass1Result = await parseClaudeResponse(pass1Response);
+    // Extract and parse JSON from Claude's response (handles markdown code blocks)
+    let responseText = response.content[0].text || '{}';
     
-    // PASS 2: Validate and potentially reprompt
-    const validation = validator.validateSVG(pass1Result.svg, pass1Result);
-    
-    let finalResult = pass1Result;
-    let finalValidation = validation;
-    
-    if (!validation.isValid && validation.summary.critical > 0) {
-      console.log('🔄 2-Pass System - Pass 2 Required:', validation.summary);
-      
-      // Generate reprompt for Pass 2
-      const repromptData = repromptFixer.generateReprompt(pass1.prompt, pass1Result.svg, pass1Result);
-      
-      if (repromptData.needsReprompt) {
-        console.log('🔧 2-Pass System - Applying corrections:', repromptData.corrections.critical.length);
-        
-        // Execute Pass 2 with corrections
-        const pass2Response = await anthropic.messages.create({
-          model: DEFAULT_MODEL_STR,
-          max_tokens: 3000,
-          system: repromptData.reprompt,
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "Apply the corrections and regenerate the icon. Return ONLY the corrected JSON object."
-                },
-                {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: mediaType,
-                    data: base64Image
-                  }
-                }
-              ]
-            }
-          ]
-        });
-
-        // Parse Pass 2 response
-        const pass2Result = await parseClaudeResponse(pass2Response);
-        const pass2Validation = validator.validateSVG(pass2Result.svg, pass2Result);
-        
-        if (pass2Validation.isValid || pass2Validation.summary.critical < validation.summary.critical) {
-          finalResult = pass2Result;
-          finalValidation = pass2Validation;
-          console.log('✅ 2-Pass System - Pass 2 successful');
-        } else {
-          console.log('⚠️ 2-Pass System - Pass 2 did not improve, using Pass 1 result');
-        }
-      }
-    } else {
-      console.log('✅ 2-Pass System - Pass 1 successful, no corrections needed');
+    // Remove markdown code blocks if present
+    if (responseText.includes('```json')) {
+      responseText = responseText.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    } else if (responseText.includes('```')) {
+      responseText = responseText.replace(/```\s*/, '').replace(/```\s*$/, '');
     }
     
-    // Convert validation results to legacy format
-    const legacyValidation = convertValidationToLegacy(finalValidation);
+    // Clean up the response text
+    responseText = responseText.trim();
+    
+    // Find JSON object in the response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      responseText = jsonMatch[0];
+    }
+    
+    const result = JSON.parse(responseText);
+    
+    // Validate required fields
+    if (!result.svg || !result.primaryShape) {
+      throw new Error('Claude response missing required fields (svg, primaryShape)');
+    }
+    
+    // Validate the generated icon
+    const validationResults = validateIcon(result.svg);
     
     return {
-      svg: finalResult.svg,
+      svg: result.svg,
       metadata: {
-        primaryShape: finalResult.primaryShape,
-        decorations: finalResult.decorations || [],
-        strokeWidth: finalResult.strokeWidth || 2,
-        canvasSize: finalResult.canvasSize || 24,
-        fillUsed: finalResult.fillUsed || false,
-        validated: finalValidation.isValid,
-        conceptualPurpose: finalResult.conceptualPurpose,
-        semanticIntent: pass1.semanticIntent,
-        validationSummary: finalValidation.summary,
-        originalFilename: fileName,
-        suggestedFilename: pass1.semanticIntent.filename + '.svg'
+        primaryShape: result.primaryShape,
+        decorations: result.decorations || [],
+        strokeWidth: result.strokeWidth,
+        canvasSize: result.canvasSize,
+        fillUsed: result.fillUsed,
+        validated: validationResults.every(r => r.status === 'PASS')
       },
-      validationResults: legacyValidation
+      validationResults
     };
 
   } catch (error) {
-    console.error('2-Pass Icon conversion error:', error);
+    console.error('Icon conversion error:', error);
     throw new Error(`Failed to convert image to icon: ${error.message}`);
   }
-}
-
-// Helper function to parse Claude's response consistently
-async function parseClaudeResponse(response: any) {
-  let responseText = response.content[0].text || '{}';
-  
-  // Remove markdown code blocks if present
-  if (responseText.includes('```json')) {
-    responseText = responseText.replace(/```json\s*/, '').replace(/```\s*$/, '');
-  } else if (responseText.includes('```')) {
-    responseText = responseText.replace(/```\s*/, '').replace(/```\s*$/, '');
-  }
-  
-  // Clean up the response text
-  responseText = responseText.trim();
-  
-  // Find JSON object in the response
-  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    responseText = jsonMatch[0];
-  }
-  
-  const result = JSON.parse(responseText);
-  
-  // Validate required fields
-  if (!result.svg || !result.primaryShape) {
-    throw new Error('Claude response missing required fields (svg, primaryShape)');
-  }
-  
-  return result;
-}
-
-// Helper function to convert new validation format to legacy format
-function convertValidationToLegacy(validation: any) {
-  const legacyResults = [];
-  
-  validation.issues.forEach((issue: any) => {
-    legacyResults.push({
-      rule: issue.title,
-      status: issue.category === 'CRITICAL' ? 'FAIL' : issue.category === 'WARNING' ? 'WARNING' : 'PASS',
-      message: issue.message
-    });
-  });
-  
-  // Add some basic validation checks if no issues
-  if (legacyResults.length === 0) {
-    legacyResults.push(
-      { rule: 'Stroke width: 2dp', status: 'PASS', message: 'All strokes are 2dp width' },
-      { rule: 'Canvas size: 24x24dp', status: 'PASS', message: 'Correct canvas dimensions' },
-      { rule: 'No visual effects', status: 'PASS', message: 'No forbidden visual effects detected' }
-    );
-  }
-  
-  return legacyResults;
 }
 
 function validateIcon(svg: string): Array<{rule: string; status: 'PASS' | 'FAIL' | 'WARNING'; message: string}> {

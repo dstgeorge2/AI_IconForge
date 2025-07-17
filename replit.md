@@ -24,14 +24,7 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript with ES modules
 - **API Design**: RESTful endpoints for icon conversion
 - **File Processing**: Multer for multipart form data handling
-- **AI Integration**: Anthropic Claude 4.0 Sonnet for image-to-icon conversion
-
-### 2-Pass Icon Generation System
-- **Pass 1**: Semantic intent analysis and comprehensive prompt generation
-- **Pass 2**: SVG validation and automatic error correction
-- **Modular Rulesets**: 7 JSON-based rule modules for different aspects
-- **Adaptive Prompts**: Context-aware instructions based on filename analysis
-- **Quality Assurance**: Automated validation with critical/warning/info levels
+- **AI Integration**: OpenAI GPT-4o for image-to-icon conversion
 
 ### Database Layer
 - **ORM**: Drizzle ORM for type-safe database operations
@@ -54,19 +47,12 @@ Preferred communication style: Simple, everyday language.
 - **ValidationReport**: Real-time style guide compliance checking
 - **ExportControls**: Download and copy functionality
 
-### Advanced Prompt Engineering System
-- **Semantic Intent Parser**: Filename-to-action/object detection
-- **Adaptive Prompts**: Context-aware instructions for different image types
-- **Modular Rulesets**: 7 JSON rule modules covering all design aspects
-- **Quality Assurance**: Pre and post-generation validation checklists
-- **2-Pass Validation**: Automatic error detection and correction system
-
 ### Style Guide Engine
 - **Canvas**: 24x24dp with 20x20dp live area
 - **Stroke**: 2dp width, black color, solid style
 - **Geometry**: Regular shapes with 2dp corner radius
 - **Decorations**: Limited sparkles and dots
-- **Validation**: Comprehensive automated rule checking system
+- **Validation**: Automated rule checking system
 
 ## Data Flow
 
