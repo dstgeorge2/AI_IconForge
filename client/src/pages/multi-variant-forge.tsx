@@ -147,7 +147,7 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
   };
 
   return (
-    <div className="space-y-4">
+    <div key={`${variantType}-${variant.id}-${variant.metadata?.revised ? 'revised' : 'original'}`} className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {getVariantIcon(variantType)}
@@ -176,6 +176,7 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
                     style={{ width: size + 4, height: size + 4 }}
                   >
                     <div 
+                      key={`${variantType}-${variant.id}-${size}`}
                       style={{ width: size, height: size }}
                       dangerouslySetInnerHTML={{ __html: variant.svg }}
                     />
@@ -230,16 +231,6 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
         
         {revisionExpanded[variantType] && (
           <div className="space-y-3">
-            <div className="text-sm font-mono">
-              <p className="text-gray-700 mb-2">What the computer sees in your image:</p>
-              <div className="p-3 bg-white border border-gray-300 rounded text-xs leading-relaxed">
-                <p><strong>Main Subject:</strong> {variant.metadata?.primarySubject || 'Analysis in progress...'}</p>
-                <p><strong>Key Features:</strong> {variant.metadata?.features?.join(', ') || 'Identifying features...'}</p>
-                <p><strong>Visual Elements:</strong> {variant.metadata?.visualElements?.join(', ') || 'Processing elements...'}</p>
-                <p><strong>Complexity Level:</strong> {variant.metadata?.complexity || 'Analyzing...'}</p>
-              </div>
-            </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <label className="text-sm font-mono font-medium">Attach Reference Icon</label>
