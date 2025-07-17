@@ -1,0 +1,195 @@
+Here is a modular, layered ruleset definition system for AI-generated UI icons, written to support targeted overrides, prompt injection, and future rule refinement. It’s broken into seven downloadable JSON modules, each self-contained but harmonized across a shared schema.
+
+These are designed for easy use with Claude, GPT, or custom AI renderers — and optimized for inheritance and override behavior like a design system.
+
+⸻
+
+📦 Downloadable Rule Modules (JSON format)
+
+Each module:
+	•	Uses clear headers for Claude or GPT ingestion ("rule_module": "...")
+	•	Is self-contained and override-safe
+	•	Includes system-wide constants derived from:
+🔹 IBM Carbon Icons
+🔹 Google Material Symbols
+🔹 FontAwesome
+🔹 Your custom token system (CDS-aligned)
+
+⸻
+
+📁 1. icon_principles.json — Universal Do’s & Don’ts
+
+{
+  "rule_module": "icon_principles",
+  "principles": {
+    "clarity": "Every icon must clearly represent a single function or concept.",
+    "recognizability": "Use common metaphors users will understand (house = home).",
+    "consistency": "All icons must match stroke, rhythm, and scale.",
+    "scalability": "Must remain readable at 16dp.",
+    "accessibility": "Must have contrast ≥ 4.5:1; no color reliance.",
+    "flatness": "No shadows, gradients, or 3D effects.",
+    "simplicity": "Avoid unnecessary detail. Think minimal but meaningful."
+  },
+  "influences": ["IBM Carbon", "Google Material", "FontAwesome"]
+}
+
+
+⸻
+
+📁 2. stroke_and_line_rules.json — Stroke Weight, Terminals, Angles
+
+{
+  "rule_module": "stroke_and_line_rules",
+  "stroke": {
+    "default_weight": "2dp",
+    "color": "#000000",
+    "style": "solid",
+    "terminals": ["squared", "45_clipped"],
+    "corner_radius": {
+      "outer": "2dp",
+      "inner": "square"
+    }
+  },
+  "angle_resolution": {
+    "allowed": [15, 30, 45, 90],
+    "preferred": [45, 90]
+  },
+  "enforce_pixel_snapping": true,
+  "allow_subpixel": false
+}
+
+
+⸻
+
+📁 3. grid_and_alignment.json — Canvas Size, Padding, Keylines
+
+{
+  "rule_module": "grid_and_alignment",
+  "canvas": {
+    "size": "24dp",
+    "live_area": "20dp",
+    "padding": "2dp"
+  },
+  "alignment": {
+    "snap_to_grid": true,
+    "optical_centering": true
+  },
+  "keylines": {
+    "square": "18dp",
+    "circle": "20dp",
+    "vertical_rectangle": "16dp × 20dp",
+    "horizontal_rectangle": "20dp × 16dp"
+  }
+}
+
+
+⸻
+
+📁 4. shape_and_structure_rules.json — Metaphor Shape, Supporting Elements
+
+{
+  "rule_module": "shape_and_structure_rules",
+  "style": "geometric",
+  "imperfection_policy": {
+    "allow_micro_asymmetry": true,
+    "no_grid_violation": true
+  },
+  "elements": {
+    "primary_required": true,
+    "supporting_limit": 2
+  },
+  "decoration_rules": {
+    "sparkles": {
+      "allowed": true,
+      "shape": "four_point_star",
+      "rotation_range": [15, 30],
+      "max_count": 3
+    },
+    "dots": {
+      "allowed": true,
+      "style": "circle_or_soft_square",
+      "max_count": 5,
+      "size_range": ["1dp", "1.5dp"]
+    }
+  }
+}
+
+
+⸻
+
+📁 5. perspective_and_dimensionality.json — View Rules
+
+{
+  "rule_module": "perspective_and_dimensionality",
+  "perspective": "orthographic",
+  "allow_3d_simulation": false,
+  "allow_tilt": false,
+  "depth_effects": {
+    "shading": false,
+    "stroke_weight_hinting": true
+  }
+}
+
+
+⸻
+
+📁 6. semantic_and_context_rules.json — Intent from Filenames, Role Tags
+
+{
+  "rule_module": "semantic_and_context_rules",
+  "naming_convention": "snake_case",
+  "intent_from_filename": true,
+  "filename_to_context": {
+    "add": "creation",
+    "delete": "removal",
+    "edit": "modification",
+    "desk": "workstation",
+    "node": "network_entity",
+    "file": "document"
+  },
+  "tags_required": ["function", "user_role", "object_type"],
+  "description_required": true
+}
+
+
+⸻
+
+📁 7. output_and_accessibility.json — Export, Color, Contrast
+
+{
+  "rule_module": "output_and_accessibility",
+  "exports": ["SVG", "Figma", "ReactComponent"],
+  "export_sizes": ["16dp", "24dp", "40dp", "48dp"],
+  "contrast_ratio_min": "4.5:1",
+  "allow_fill": false,
+  "allow_color_only_sets": false,
+  "filename_format": "snake_case"
+}
+
+
+⸻
+
+🔁 Targeted Rule Updating – Example Use
+
+Want to change sparkle max?
+Just update shape_and_structure_rules.json > decoration_rules > sparkles > max_count
+
+Want to use 1dp strokes in a variant set?
+Override stroke_and_line_rules.json > stroke > default_weight
+
+Want to train Claude differently per context?
+Feed only the semantic_and_context_rules.json + visual_spec in a prompt
+
+⸻
+
+🧠 How to Think About This System
+
+Think of it like:
+	•	Design Tokens + JSON Schema + Prompt DSL
+	•	It’s layered like CSS: defaults → overrides
+	•	Each file is its own “header” for the AI
+	•	Easy to combine, extend, or override per project or icon set
+
+⸻
+
+Would you like all 7 as actual .json files zipped for download? I can package them immediately.

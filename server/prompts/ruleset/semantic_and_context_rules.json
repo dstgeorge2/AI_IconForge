@@ -1,0 +1,97 @@
+{
+  "rule_module": "semantic_and_context_rules",
+  "naming_convention": "snake_case",
+  "intent_from_filename": true,
+  "filename_to_context": {
+    "add": "creation_action",
+    "create": "creation_action", 
+    "new": "creation_action",
+    "delete": "removal_action",
+    "remove": "removal_action",
+    "edit": "modification_action",
+    "update": "modification_action",
+    "modify": "modification_action",
+    "view": "navigation_action",
+    "open": "state_change",
+    "close": "state_change",
+    "save": "persistence_action",
+    "export": "output_action",
+    "import": "input_action",
+    "desk": "workspace_object",
+    "workspace": "environment_object",
+    "node": "network_entity",
+    "file": "document_object",
+    "folder": "container_object",
+    "directory": "container_object",
+    "user": "identity_object",
+    "profile": "identity_object",
+    "account": "identity_object",
+    "settings": "configuration_object",
+    "config": "configuration_object",
+    "tool": "utility_object",
+    "widget": "interface_object",
+    "component": "interface_object",
+    "data": "information_object",
+    "database": "storage_object",
+    "server": "system_object",
+    "network": "connection_object",
+    "connection": "connection_object",
+    "link": "connection_object"
+  },
+  "action_categories": {
+    "creation": ["add", "create", "new", "generate", "build", "make"],
+    "modification": ["edit", "update", "modify", "change", "alter", "adjust"],
+    "removal": ["delete", "remove", "clear", "clean", "purge"],
+    "navigation": ["view", "see", "show", "display", "browse", "explore"],
+    "state_change": ["open", "close", "start", "stop", "pause", "resume"],
+    "persistence": ["save", "store", "persist", "backup", "archive"],
+    "transfer": ["export", "import", "upload", "download", "sync", "share"],
+    "configuration": ["settings", "config", "setup", "configure", "customize"]
+  },
+  "object_categories": {
+    "workspace": ["desk", "workspace", "environment", "context", "space"],
+    "document": ["file", "document", "page", "sheet", "report"],
+    "container": ["folder", "directory", "container", "group", "collection"],
+    "identity": ["user", "profile", "account", "person", "member"],
+    "system": ["server", "system", "machine", "device", "hardware"],
+    "network": ["node", "connection", "link", "network", "bridge"],
+    "interface": ["widget", "component", "control", "element", "button"],
+    "data": ["data", "information", "content", "record", "entry"],
+    "utility": ["tool", "utility", "helper", "service", "function"]
+  },
+  "context_mapping": {
+    "toolbar_actions": ["add", "delete", "edit", "save", "open", "close"],
+    "navigation_items": ["view", "browse", "explore", "navigate"],
+    "status_indicators": ["active", "inactive", "pending", "complete", "error"],
+    "system_objects": ["server", "database", "network", "connection"],
+    "user_actions": ["profile", "settings", "account", "preferences"],
+    "content_management": ["file", "folder", "document", "data", "export", "import"]
+  },
+  "intent_inference": {
+    "primary_action_detection": "first_verb_in_filename",
+    "object_identification": "primary_noun_in_filename",
+    "modifier_detection": "adjectives_and_descriptors",
+    "context_clues": "file_extension_and_surrounding_words"
+  },
+  "semantic_tags": {
+    "required": ["function", "user_role", "object_type"],
+    "optional": ["context", "priority", "frequency", "accessibility"],
+    "format": "lowercase_with_underscores"
+  },
+  "description_requirements": {
+    "min_length": 10,
+    "max_length": 100,
+    "include_purpose": true,
+    "include_user_action": true,
+    "avoid_technical_jargon": true,
+    "format": "Action description - Brief explanation of purpose"
+  },
+  "validation_rules": [
+    "Filename follows snake_case convention",
+    "Action is clearly identifiable from filename",
+    "Object type is recognizable",
+    "Context is appropriate for intended use",
+    "Semantic tags are properly formatted",
+    "Description meets length and clarity requirements"
+  ]
+}

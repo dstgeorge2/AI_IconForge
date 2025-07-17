@@ -1,0 +1,173 @@
+You’re aiming for a 2-pass AI icon generation system with strong semantic intent mapping, universal design constraints, and validation before final render — like a compiler for icon prompts.
+
+Below is the complete structure for how to think about and implement this:
+
+⸻
+
+🎯 Universal 2-Pass Icon Generation Framework
+
+🧠 Pass 1: Intent Parsing + Prompt Structuring
+
+This stage ensures the system understands what to make, why it matters, and how it should behave visually. It’s based on 3 key foundations:
+
+⸻
+
+✳️ 1. SYSTEM UNIVERSAL THINKING (Design DNA Layer)
+
+This is the global logic and philosophy the system always applies before generating anything:
+
+{
+  "icon_type": "UI_ICON",
+  "system_principles": [
+    "Icons must be functional, communicative, and minimalist.",
+    "They are not illustrations — they are visual buttons or indicators.",
+    "Flat, orthographic icons only — no 3D, tilt, or shadows.",
+    "Use consistent geometry, stroke, corner treatment, and alignment.",
+    "Avoid metaphor mixing. One metaphor per icon.",
+    "All icons must be pixel-snapped, stroke-aligned, and scalable.",
+    "No gradients, depth, or colors unless explicitly allowed."
+  ],
+  "visual_language": {
+    "stroke_weight": "2dp",
+    "corner_radius": "2dp outer, square inner",
+    "default_stroke_terminal": ["squared", "45° clipped"],
+    "allowed_line_angles": [15, 30, 45, 90],
+    "canvas": "24dp × 24dp",
+    "live_area": "20dp centered"
+  },
+  "reference_systems": ["IBM Carbon Icons", "Google Material Icons", "FontAwesome"],
+  "output_target": ["Figma-ready SVG", "React component", "Dark mode compatible"]
+}
+
+
+⸻
+
+🧩 2. IMAGE INTENT — Visual Concept & Metaphor Breakdown
+
+From existing image, extract this semantic layer:
+
+{
+  "image_name": "add_workspace.gif",
+  "inferred_concepts": ["workspace", "add", "container", "desk", "node"],
+  "dominant_shape": "box with top tab",
+  "modifier_shape": "plus sign (top right)",
+  "primary function": "create new workstation or grouped space",
+  "metaphor_quality": "medium — needs clarity between workspace and physical desk",
+  "expected_user_behavior": "Click to open or create a new desk context or node"
+}
+
+
+⸻
+
+🔤 3. IMAGE NAME INTENT — Semantic Rules from Filenames
+
+Use naming logic to create intent metadata, even with no image:
+
+{
+  "filename": "add_to_desk",
+  "action": "add",
+  "object": "desk",
+  "intent": "create workstation",
+  "icon_role": "action-button",
+  "contextual_scope": "workspace layout, IT tool, CAD system"
+}
+
+Combined with patterns like:
+	•	add_ → action = creation
+	•	_desk, _node, _workspace → object = container, context, surface
+	•	_new → modifier = freshness, sparkle allowed
+
+⸻
+
+✅ PASS 1 OUTPUT SUMMARY
+
+After pass 1, the system generates:
+
+{
+  "intent": "create a UI icon representing the creation of a new desk or workspace",
+  "geometry_spec": {
+    "main": "L-shaped desk (14dp wide) with 2 vertical legs",
+    "modifier": "4dp plus sign at top-right corner",
+    "canvas": "24dp",
+    "stroke": "2dp black",
+    "alignment": "pixel-snapped"
+  },
+  "icon_type": "outline",
+  "semantic_tags": ["desk", "add", "workspace", "node"],
+  "description": "Add Workstation — Create a new workbench or node in the workspace."
+}
+
+This is the final Claude/GPT prompt structure.
+
+⸻
+
+✅ Pass 2: Render + Output Validation + Reprompt (if needed)
+
+⸻
+
+🧪 OUTPUT VALIDATION CHECKLIST
+
+After the icon is generated (SVG, Figma, Canvas, etc.), validate against these layers of checks:
+
+Layer	Check	Status (✅/⚠️/❌)	Rule
+Geometry	Stroke = 2dp?	✅	stroke_and_line_rules
+	Corners = 2dp outer, square inner?	✅	corner_radius
+	Live area respected? (20dp)	⚠️	grid_and_alignment
+Visual Style	Fill used?	❌	allow_fill = false
+	Sparkle overused? (>3)	✅	max_sparkles = 3
+Semantics	Is it clearly a desk?	⚠️	dominant_shape: desk
+	Plus sign legible at 16dp?	✅	scalability
+Contextual Fit	Does it match similar action icons?	✅	semantic_tags
+Contrast	Meets 4.5:1?	✅	accessibility
+
+
+⸻
+
+🔁 REPROMPT TRIGGERS
+
+If any critical rule fails (❌), the system must:
+
+a) Inject the failed logic into the prompt:
+
+"The previous icon violated the fill constraint. Re-render the icon using only 2dp black stroke, no fill, with orthographic flat perspective. Retain the concept of a desk with a plus sign."
+
+b) Override specific shape logic if needed:
+
+"Make the desk shape simpler — consider using a horizontal rectangle with two vertical lines as legs. Ensure plus sign is 4dp and not overlapping the desk shape."
+
+
+⸻
+
+📦 Final Output (After Validation Pass)
+
+{
+  "icon_name": "add_to_desk",
+  "final_svg": "...",
+  "size_variants": ["16dp", "24dp", "40dp"],
+  "react_component_exported": true,
+  "rules_passed": true,
+  "metadata": {
+    "tags": ["desk", "add", "container", "workspace"],
+    "description": "Add Workstation — Create a new working context or surface.",
+    "contrast": "Verified 4.5:1",
+    "design_tokens_used": ["stroke_2dp", "corner_radius_2dp", "icon_black"]
+  }
+}
+
+
+⸻
+
+🧠 Summary Mental Model
+
+Layer	Think Like…
+System Thinking	Your design constitution
+Image Intent	AI’s decoder ring for visuals
+Filename Intent	Routing logic for semantic meaning
+Validation Layer	Linter for SVG and metaphor
+Reprompting	Self-correcting fallback loop
+2-Pass Flow	Compiler pipeline for icon generation
+
+
+⸻
+
+Would you like this wrapped as a schema-driven .json generator file or a Claude/GPT-ready prompt template? I can create a ready-to-run “Icon Prompt Engine v1”.
