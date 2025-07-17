@@ -28,6 +28,8 @@ interface VariantDisplayProps {
 
 const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, fileName, revisionExpanded, setRevisionExpanded }) => {
   const [copied, setCopied] = useState(false);
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [customPrompt, setCustomPrompt] = useState('');
   const { toast } = useToast();
 
   const handleCopy = async () => {
@@ -51,6 +53,47 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  // Reference file dropzone
+  const { getRootProps: getReferenceProps, getInputProps: getReferenceInputProps, isDragActive: isReferenceDragActive } = useDropzone({
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']
+    },
+    maxSize: 5 * 1024 * 1024, // 5MB limit for reference
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        setReferenceFile(acceptedFiles[0]);
+        toast({
+          title: 'Reference icon attached',
+          description: `${acceptedFiles[0].name} ready for comparison`
+        });
+      }
+    },
+    onDropRejected: (rejectedFiles) => {
+      toast({
+        title: 'File rejected',
+        description: rejectedFiles[0]?.errors[0]?.message || 'Invalid file type or size',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  const handleRevision = () => {
+    if (!customPrompt.trim() && !referenceFile) {
+      toast({
+        title: 'No changes specified',
+        description: 'Please provide a custom prompt or reference icon',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // TODO: Implement revision API call
+    toast({
+      title: 'Revision requested',
+      description: 'Icon refinement will be implemented soon',
+    });
   };
 
   const getVariantIcon = (type: string) => {
@@ -183,23 +226,66 @@ const VariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, f
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <label className="text-sm font-mono font-medium">Attach Reference Icon</label>
-                <div className="border-2 border-dashed border-gray-300 rounded p-3 text-center text-sm text-gray-500">
-                  <Upload className="w-4 h-4 mx-auto mb-1" />
-                  Drop reference icon here
+                <div
+                  {...getReferenceProps()}
+                  className={`border-2 border-dashed rounded p-3 text-center text-sm cursor-pointer transition-colors ${
+                    isReferenceDragActive 
+                      ? 'border-blue-400 bg-blue-50' 
+                      : referenceFile
+                      ? 'border-green-400 bg-green-50'
+                      : 'border-gray-300 text-gray-500 hover:border-gray-400'
+                  }`}
+                >
+                  <input {...getReferenceInputProps()} />
+                  {referenceFile ? (
+                    <div className="space-y-1">
+                      <Check className="w-4 h-4 mx-auto text-green-600" />
+                      <p className="text-green-700 font-medium">{referenceFile.name}</p>
+                      <p className="text-xs text-green-600">
+                        {(referenceFile.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <Upload className="w-4 h-4 mx-auto" />
+                      <p>{isReferenceDragActive ? 'Drop reference here' : 'Drop reference icon here'}</p>
+                      <p className="text-xs">or click to select</p>
+                    </div>
+                  )}
                 </div>
+                {referenceFile && (
+                  <Button
+                    onClick={() => setReferenceFile(null)}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs"
+                  >
+                    Remove Reference
+                  </Button>
+                )}
               </div>
               
               <div className="space-y-2">
                 <label className="text-sm font-mono font-medium">Edit Prompt</label>
                 <textarea 
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
                   placeholder="Describe how you'd like to refine this icon..."
                   className="w-full p-2 border border-gray-300 rounded text-sm font-mono resize-none"
                   rows={3}
                 />
+                <div className="text-xs text-gray-500 font-mono">
+                  {customPrompt.length}/200 characters
+                </div>
               </div>
             </div>
             
-            <Button className="w-full font-mono" variant="default">
+            <Button 
+              onClick={handleRevision}
+              className="w-full font-mono" 
+              variant="default"
+              disabled={!customPrompt.trim() && !referenceFile}
+            >
               Revise & Regenerate
             </Button>
           </div>
@@ -259,7 +345,7 @@ export default function MultiVariantForge() {
       setMultiVariantResult(data);
       toast({
         title: 'Icons generated successfully!',
-        description: `Generated 4 variants for ${data.originalImageName}`
+        description: `Generated 5 variants for ${data.originalImageName}`
       });
     },
     onError: (error) => {
