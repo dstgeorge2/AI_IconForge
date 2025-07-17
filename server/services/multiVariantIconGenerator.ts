@@ -1,6 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { generateIntelligentPrompt, IntelligentPromptResult } from './intelligentPrompting';
 import { IconVariantResponse, MultiVariantIconResponse } from '../../shared/schema';
+import { generateMetaphorVariants, resolveMetaphor, getBestMetaphor, MetaphorContext } from './metaphorEngine';
+import { validateIcon } from './iconValidation';
+import { validateIconAtMultipleSizes } from './previewValidator';
+import { validateIconAgainstSet, analyzeIconSet, generateSetConsistencyRecommendations } from './setAwareValidator';
 
 /*
 <important_code_snippet_instructions>
@@ -722,29 +726,43 @@ Explain what elements you blended and what you emphasized in your final decision
 export async function generateMultiVariantIconsFromText(textDescription: string): Promise<MultiVariantIconResponse> {
   console.log('🎯 Multi-Variant Generation - Starting text-based analysis...');
   
-  // Create a mock intelligent prompt for text-based generation
+  // Use metaphor engine to analyze text description
+  const metaphorContext: MetaphorContext = {
+    textDescription,
+    fileName: 'text-description.txt'
+  };
+  
+  const metaphorVariants = generateMetaphorVariants(metaphorContext);
+  const bestMetaphor = getBestMetaphor(metaphorContext);
+  const resolvedMetaphor = resolveMetaphor(textDescription);
+  
+  console.log('🎯 Metaphor Analysis - Found variants:', metaphorVariants.length);
+  console.log('🎯 Best metaphor:', bestMetaphor?.metaphor);
+  console.log('🎯 Resolved metaphor:', resolvedMetaphor);
+  
+  // Create enhanced intelligent prompt for text-based generation
   const intelligentPrompt: IntelligentPromptResult = {
     imageAnalysis: {
-      primarySubject: 'text-description',
-      recognizableFeatures: [textDescription],
-      visualElements: ['text-based-icon-request'],
+      primarySubject: bestMetaphor?.concept || 'text-description',
+      recognizableFeatures: bestMetaphor?.visualElements || [textDescription],
+      visualElements: metaphorVariants.map(v => v.metaphor).slice(0, 3),
       geometricHints: [],
       complexity: 'moderate'
     },
     filenameAnalysis: {
       detectedAction: 'create',
       detectedObject: 'icon',
-      category: 'custom',
-      universalMetaphor: textDescription
+      category: bestMetaphor?.category || 'custom',
+      universalMetaphor: bestMetaphor?.metaphor || textDescription
     },
     patternMatching: {
       materialDesignSimilarity: 0.8,
       carbonDesignSimilarity: 0.8,
       fontAwesomeSimilarity: 0.7,
-      commonUIPatterns: ['custom-icon']
+      commonUIPatterns: metaphorVariants.map(v => v.concept).slice(0, 3)
     },
-    enhancedPrompt: textDescription,
-    confidenceScore: 0.9,
+    enhancedPrompt: `${textDescription} (metaphor: ${bestMetaphor?.metaphor || 'direct'})`,
+    confidenceScore: bestMetaphor?.confidence || 0.7,
     generationApproach: 'text-description'
   };
   
@@ -837,37 +855,62 @@ async function generatePictogramVariantFromText(context: VariantGenerationContex
 
 async function generateTextVariant(prompt: string, context: VariantGenerationContext): Promise<IconVariantResponse> {
   try {
+    // Enhanced prompt with metaphor context
+    const enhancedPrompt = `${prompt}
+
+## METAPHOR ANALYSIS
+${context.textDescription ? `Primary concept: ${context.textDescription}` : ''}
+
+## QUALITY REQUIREMENTS
+- Generate multiple metaphor variants internally before committing to final design
+- Ensure icon passes validation at 16px, 20px, 24px sizes
+- Use optical corrections for visual balance (0.5dp shifts if needed)
+- Follow grid alignment and pixel snapping rules
+- Create Grade A/S tier icon with semantic clarity and visual balance
+
+## VALIDATION CRITERIA
+The icon must:
+1. Read in 0.2 seconds (instant recognition)
+2. Be optically balanced (not just geometrically centered)
+3. Reduce concept to purest essence without losing meaning
+4. Align to pixel grid with clean edges
+5. Match design system consistency`;
+
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
       max_tokens: 2000,
-      system: "You are an expert SVG icon designer. Generate clean, geometric SVG icons following exact specifications. Always respond with valid SVG code and explanations.",
+      system: "You are an expert SVG icon designer creating Grade A/S tier icons. Generate clean, geometric SVG icons with semantic clarity, optical balance, and instant recognition. Follow exact specifications and validation criteria.",
       messages: [
         {
           role: "user",
-          content: prompt
+          content: enhancedPrompt
         }
       ],
       tools: [
         {
           name: "generate_icon_svg",
-          description: "Generate an SVG icon with explanation and confidence score",
+          description: "Generate a Grade A/S tier SVG icon with explanation and confidence score",
           input_schema: {
             type: "object",
             properties: {
               svg: {
                 type: "string",
-                description: "Complete SVG code for the icon"
+                description: "Complete SVG code for the icon following all validation criteria"
               },
               explanation: {
                 type: "string",
-                description: "Explanation of the design decisions and visual metaphors used"
+                description: "Explanation of metaphor choice, design decisions, and visual balance techniques used"
               },
               confidence: {
                 type: "number",
-                description: "Confidence score from 0-100 indicating design quality"
+                description: "Confidence score from 0-100 indicating design quality and validation compliance"
+              },
+              metaphor: {
+                type: "string",
+                description: "The primary metaphor used in the icon design"
               }
             },
-            required: ["svg", "explanation", "confidence"]
+            required: ["svg", "explanation", "confidence", "metaphor"]
           }
         }
       ],
@@ -879,6 +922,19 @@ async function generateTextVariant(prompt: string, context: VariantGenerationCon
       throw new Error('No tool response received');
     }
 
+    // Validate the generated icon
+    const validation = validateIcon(result.svg, 'generic');
+    const previewValidation = await validateIconAtMultipleSizes(result.svg);
+    
+    // Adjust confidence based on validation results
+    let adjustedConfidence = result.confidence;
+    if (!validation.isValid) {
+      adjustedConfidence = Math.max(0, adjustedConfidence - 30);
+    }
+    if (previewValidation.overallScore < 70) {
+      adjustedConfidence = Math.max(0, adjustedConfidence - 20);
+    }
+
     return {
       variant: {
         id: 0,
@@ -886,21 +942,27 @@ async function generateTextVariant(prompt: string, context: VariantGenerationCon
         variantType: 'text-based',
         svgCode: result.svg,
         explanation: result.explanation,
-        confidence: result.confidence,
+        confidence: adjustedConfidence,
         metadata: { 
           approach: 'text-description',
           source: context.textDescription,
-          textBased: true
+          textBased: true,
+          metaphor: result.metaphor,
+          validation: validation,
+          previewValidation: previewValidation
         },
         createdAt: new Date()
       },
       svg: result.svg,
       explanation: result.explanation,
-      confidence: result.confidence,
+      confidence: adjustedConfidence,
       metadata: { 
         approach: 'text-description',
         source: context.textDescription,
-        textBased: true
+        textBased: true,
+        metaphor: result.metaphor,
+        validation: validation,
+        previewValidation: previewValidation
       }
     };
   } catch (error) {

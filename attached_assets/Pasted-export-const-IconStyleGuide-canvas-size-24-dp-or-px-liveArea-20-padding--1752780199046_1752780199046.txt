@@ -1,0 +1,125 @@
+export const IconStyleGuide = {
+  canvas: {
+    size: 24, // dp or px
+    liveArea: 20,
+    padding: 2,
+    centerAlign: true,
+    pixelGrid: true,
+  },
+
+  stroke: {
+    defaultWeight: 2, // dp
+    units: 'dp',
+    terminals: 'square', // never rounded
+    consistency: true,
+    varianceAllowed: false,
+    opticalAdjustmentsAllowed: true,
+  },
+
+  cornerRadii: {
+    exterior: 2,
+    interior: 0, // Square corners inside
+    style: 'linear',
+  },
+
+  geometry: {
+    allowOrganic: false,
+    baseShapes: ['square', 'circle', 'verticalRect', 'horizontalRect'],
+    enforceKeyline: true,
+    onGrid: true,
+    avoidComplexCurves: true,
+    avoidDimensionalPerspective: true, // e.g. no isometric tilt unless pictogram
+  },
+
+  color: {
+    allowed: false, // no color in default icons
+    monochrome: true,
+    strokeOnly: true,
+    fillOnlyIf: ['filledMaterialState', 'two-tone variants'],
+    contrastRatio: 4.5,
+  },
+
+  iconTypes: {
+    material: {
+      strokeWeight: 2,
+      fill: 'optional',
+      cornerRadii: 2,
+      opticalSizeAware: true,
+    },
+    carbon: {
+      strokeWeight: 2,
+      cornerRadii: {
+        exterior: 2,
+        interior: 0,
+      },
+      alignment: 'center',
+    },
+    pictogram: {
+      moreDetailAllowed: true,
+      strokeWeight: 2,
+      baseSize: 32,
+      illustrative: true,
+    }
+  },
+
+  sizeVariants: [16, 20, 24, 32, 48],
+
+  accessibility: {
+    noTextInIcon: true,
+    labelSupport: true, // aria-label required if not decorative
+    contrastRatio: 4.5,
+    touchTargetMin: 44,
+  },
+
+  fileRules: {
+    format: 'SVG',
+    namingConvention: 'kebab-case',
+    requiredMetadata: ['category', 'action', 'object', 'variant'],
+    noInlineColor: true,
+    strokeAsVectorPathOnly: true,
+  },
+
+  semanticMapping: {
+    categories: [
+      'action', 'navigation', 'file', 'communication', 'status',
+      'tool', 'hardware', 'editor', 'search', 'toggle'
+    ],
+    metaphors: {
+      'edit': ['pencil', 'pen'],
+      'delete': ['trash', 'x'],
+      'save': ['disk', 'download'],
+      'search': ['magnifier'],
+      'settings': ['gear', 'cog'],
+      'user': ['person', 'profile'],
+      // etc...
+    }
+  },
+
+  validationRules: {
+    strokeWeight: 'must be 2dp ±0.25dp',
+    alignment: 'must be optically centered',
+    detailLevel: 'must preserve clarity at 16dp',
+    opticalAdjustments: 'allowed for stroke visibility',
+    iconMustMatchIntent: true,
+  },
+
+  prohibited: {
+    gradients: true,
+    blur: true,
+    dropShadows: true,
+    text: true,
+    photographic content: true,
+    randomized geometry: true,
+    off-grid positioning: true,
+  },
+
+  prompts: {
+    reinforcement: [
+      'use geometric primitives',
+      'icon must be recognizable at 16dp',
+      'no unnecessary detail',
+      'stroke must be even and consistent',
+      'apply design system standards (Material or Carbon)',
+    ]
+  }
+};

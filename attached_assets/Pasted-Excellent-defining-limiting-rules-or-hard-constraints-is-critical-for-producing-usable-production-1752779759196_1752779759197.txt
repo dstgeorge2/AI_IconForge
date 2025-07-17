@@ -1,0 +1,72 @@
+Excellent — defining limiting rules or hard constraints is critical for producing usable, production-grade icons. These rules prevent randomness, enforce design system compliance, and guide the logic engine to produce consistent, legible outputs.
+
+Below is a categorized list of non-negotiable constraints (⚠️ hard rules) and strong design heuristics (✅ soft guardrails) your system should enforce across generation, recognition, and validation.
+
+⸻
+
+🔒 HARD RULES: Icon Generation Constraints (Non-negotiable)
+
+Category	Rule
+Color	❌ No color. All icons must be black or monochrome vector (pure black #000 or theme-injected fill only).
+Geometry	❌ No abstract or random shapes. All geometry must represent a recognizable concept or metaphor.
+Fill/Stroke	❌ No gradients, blurs, or shadows. Icons must be constructed with solid strokes and/or solid fills only.
+Canvas	🔲 Icon must fit on a 24×24dp canvas. No elements can extend beyond the trim area.
+Stroke Weight	⚖️ Fixed 2dp stroke for Carbon; Material uses style-locked weights (100–700). Must be consistent per icon.
+Corner Radius	🔘 Rounded corners must follow system rules: 2dp max for Carbon; Material varies by style (rounded, sharp).
+Perspective	⬜ Must be flat or front-facing. ❌ No isometric or skewed angles.
+Interaction	❌ No animation, hover states, or interaction logic within the icon SVG itself.
+File Type	💾 Must output clean, optimized SVG (no raster, no embedded fonts, no external styles).
+Alignment	⬇️ Centered horizontally and vertically; geometry must align to pixel grid (whole integers).
+Icon Type	🧩 Must be an icon, not illustration or pictogram — minimal, abstracted, functional form.
+Ambiguity	❌ No multi-metaphor mashups unless explicitly requested. One icon = one idea.
+
+
+⸻
+
+✅ SOFT GUARDRAILS: Strong Recommendations
+
+Category	Guideline
+Meaningful Composition	Each icon must communicate a single, coherent action, object, or concept at a glance.
+Recognizability	Icon should be immediately recognizable without relying on labels, except for abstract system states.
+Label Compatibility	Icon should pair well with adjacent text labels without visual imbalance.
+System Consistency	Use shared geometry patterns across icon sets (e.g., plus, arrow, folder should match others).
+Live Area Use	Content should remain inside 20×20dp live area with 2dp padding (for 24dp grid).
+Visual Weight	Balance all elements visually—avoid one-sided density or misaligned components.
+Optical Corrections	Allow slight manual adjustments for visual balance (e.g., 1.5dp stroke if needed).
+Icon Role	System must tag icons with type: action, object, status, navigation, or tool.
+Locale Review	Consider global metaphors: 🧺 “basket” ≠ 🛒 “cart” ≠ 🎒 “bag” — localize appropriately.
+
+
+⸻
+
+🚫 Examples of Violations
+
+Violation	Why it breaks the rules
+Multicolor icon	❌ Breaks monochrome rule
+3D or isometric printer	❌ Breaks flat perspective rule
+Abstract geometric blob	❌ No metaphor, fails recognizability
+Icon with animated hover state	❌ Interaction logic embedded — forbidden
+Off-center glyph	❌ Alignment failure
+Blurry bitmap inside SVG	❌ Non-vector content
+
+
+⸻
+
+🧰 Enforced in the Logic Engine
+
+The product logic engine should enforce these during all phases:
+	1.	Image Recognition
+	•	Reject images with color
+	•	Flag non-icon content (photos, illustrations, cartoons)
+	•	Detect off-grid geometry
+	2.	Prompt Parsing / Generation
+	•	Reject metaphors that can’t be iconified cleanly
+	•	Auto-correct metaphors into valid icon primitives (e.g., “mail truck” → “mail” or “delivery”)
+	3.	Post-Processing
+	•	SVG validator runs: bounding box check, stroke-width consistency, fill mode check
+	•	Pixel grid validator: confirms all geometry aligns to integer coordinates
+	•	Style system validator: confirms compliance to Carbon, Material, or specified target system
+
+⸻
+
+Would you like this codified as a validation script, Figma plugin ruleset, or a JSON schema for automation?
