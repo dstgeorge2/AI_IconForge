@@ -5,6 +5,7 @@ import { convertImageToIcon } from "./services/iconConverter";
 import IconRefinementService from "./services/iconRefinement";
 import { generateMultiVariantIcons, generateMultiVariantIconsFromText } from "./services/multiVariantIconGenerator";
 import { generateOptimizedMultiVariantIcons } from "./services/optimizedIconGenerator";
+import { generateOpenAIMultiVariantIcons, generateOpenAIIconsFromText } from "./services/openaiIconGenerator";
 import { generateRevisedIcon } from "./services/iconRevision";
 import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
 import multer from "multer";
@@ -214,6 +215,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Multi-variant icon generation error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // OpenAI Multi-variant icon generation
+  app.post('/api/generate-openai-multi-variant-icons', upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      let multiVariantResult;
+      let originalName;
+      
+      if (req.body.textDescription) {
+        // Text description mode
+        const textDescription = req.body.textDescription;
+        originalName = 'openai-text-description.txt';
+        multiVariantResult = await generateOpenAIIconsFromText(textDescription);
+      } else {
+        // Image file mode
+        if (!req.file) {
+          return res.status(400).json({ error: 'No image file or text description provided' });
+        }
+        const base64Image = req.file.buffer.toString('base64');
+        originalName = req.file.originalname;
+        const additionalPrompt = req.body.prompt || '';
+        multiVariantResult = await generateOpenAIMultiVariantIcons(originalName, base64Image, additionalPrompt);
+      }
+      
+      // Create main conversion record
+      const conversion = await storage.createIconConversion({
+        originalImageName: originalName,
+        svgCode: multiVariantResult.variants['one-to-one'].svg,
+        validationResults: [],
+        metadata: { 
+          approach: 'openai-multi-variant',
+          processingTime: multiVariantResult.processingTime,
+          totalSize: multiVariantResult.totalSize,
+          model: multiVariantResult.model,
+          optimized: true
+        }
+      });
+
+      // Store all variants
+      const storedVariants = await Promise.all([
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'one-to-one',
+          svgCode: multiVariantResult.variants['one-to-one'].svg,
+          explanation: multiVariantResult.variants['one-to-one'].explanation,
+          confidence: Math.round(multiVariantResult.variants['one-to-one'].confidence),
+          metadata: multiVariantResult.variants['one-to-one'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'ui-intent',
+          svgCode: multiVariantResult.variants['ui-intent'].svg,
+          explanation: multiVariantResult.variants['ui-intent'].explanation,
+          confidence: Math.round(multiVariantResult.variants['ui-intent'].confidence),
+          metadata: multiVariantResult.variants['ui-intent'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'material',
+          svgCode: multiVariantResult.variants.material.svg,
+          explanation: multiVariantResult.variants.material.explanation,
+          confidence: Math.round(multiVariantResult.variants.material.confidence),
+          metadata: multiVariantResult.variants.material.metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'carbon',
+          svgCode: multiVariantResult.variants.carbon.svg,
+          explanation: multiVariantResult.variants.carbon.explanation,
+          confidence: Math.round(multiVariantResult.variants.carbon.confidence),
+          metadata: multiVariantResult.variants.carbon.metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'filled',
+          svgCode: multiVariantResult.variants.filled.svg,
+          explanation: multiVariantResult.variants.filled.explanation,
+          confidence: Math.round(multiVariantResult.variants.filled.confidence),
+          metadata: multiVariantResult.variants.filled.metadata
+        })
+      ]);
+
+      res.json({
+        conversionId: conversion.id,
+        originalImageName: originalName,
+        variants: {
+          'one-to-one': {
+            id: storedVariants[0].id,
+            svg: storedVariants[0].svgCode,
+            explanation: storedVariants[0].explanation,
+            confidence: storedVariants[0].confidence,
+            metadata: storedVariants[0].metadata
+          },
+          'ui-intent': {
+            id: storedVariants[1].id,
+            svg: storedVariants[1].svgCode,
+            explanation: storedVariants[1].explanation,
+            confidence: storedVariants[1].confidence,
+            metadata: storedVariants[1].metadata
+          },
+          'material': {
+            id: storedVariants[2].id,
+            svg: storedVariants[2].svgCode,
+            explanation: storedVariants[2].explanation,
+            confidence: storedVariants[2].confidence,
+            metadata: storedVariants[2].metadata
+          },
+          'carbon': {
+            id: storedVariants[3].id,
+            svg: storedVariants[3].svgCode,
+            explanation: storedVariants[3].explanation,
+            confidence: storedVariants[3].confidence,
+            metadata: storedVariants[3].metadata
+          },
+          'filled': {
+            id: storedVariants[4].id,
+            svg: storedVariants[4].svgCode,
+            explanation: storedVariants[4].explanation,
+            confidence: storedVariants[4].confidence,
+            metadata: storedVariants[4].metadata
+          }
+        },
+        processingTime: multiVariantResult.processingTime,
+        totalSize: multiVariantResult.totalSize,
+        model: multiVariantResult.model
+      });
+    } catch (error) {
+      console.error('OpenAI multi-variant icon generation error:', error);
       res.status(500).json({ error: (error as Error).message });
     }
   });
