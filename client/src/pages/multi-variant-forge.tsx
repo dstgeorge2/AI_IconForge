@@ -587,42 +587,11 @@ export default function MultiVariantForge() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-4 mb-2">
-              <h1 className="text-3xl font-mono font-bold text-black">
-                Claude Icon Forge
-              </h1>
-              <div className="flex gap-2">
-                <Badge variant="default" className="font-mono text-xs bg-black">
-                  Claude 4.0 Sonnet
-                </Badge>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="font-mono text-xs"
-                  onClick={() => window.location.href = '/openai'}
-                >
-                  Try OpenAI GPT-4o →
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="font-mono text-xs bg-purple-50 text-purple-600 hover:bg-purple-100"
-                  onClick={() => window.location.href = '/creative'}
-                >
-                  ✨ Creative Style
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="font-mono text-xs bg-blue-50 text-blue-600 hover:bg-blue-100"
-                  onClick={() => window.location.href = '/prompt-builder'}
-                >
-                  🧠 Prompt Builder
-                </Button>
-              </div>
-            </div>
+            <h1 className="text-3xl font-mono font-bold text-black mb-2">
+              Icon Forge
+            </h1>
             <p className="text-lg text-gray-600 font-mono">
-              Generate clean UI icons from uploaded images using Claude's intelligent analysis
+              Generate clean UI icons from uploaded images using intelligent analysis
             </p>
           </div>
 

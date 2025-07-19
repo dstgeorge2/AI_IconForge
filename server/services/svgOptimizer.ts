@@ -237,32 +237,5 @@ export function optimizeSVG(svgContent: string, options?: Partial<SVGOptimizatio
  */
 export function generateProductionSVG(rawSVG: string): string {
   const optimized = optimizeSVG(rawSVG);
-  return ensureValidDownloadableSVG(optimized.svg);
-}
-
-/**
- * Ensure SVG is valid for download with proper XML structure
- */
-export function ensureValidDownloadableSVG(svg: string): string {
-  // Remove any existing XML declaration
-  let cleaned = svg.replace(/<\?xml[^>]*\?>\s*/gi, '');
-  
-  // Ensure proper SVG namespace
-  if (!cleaned.includes('xmlns=')) {
-    cleaned = cleaned.replace(
-      '<svg',
-      '<svg xmlns="http://www.w3.org/2000/svg"'
-    );
-  }
-  
-  // Ensure proper structure
-  if (!cleaned.startsWith('<svg')) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <path d="M9 9l6 6M15 9l-6 6"/>
-    </svg>`;
-  }
-  
-  // Add XML declaration for downloaded files
-  return `<?xml version="1.0" encoding="UTF-8"?>\n${cleaned}`;
+  return optimized.svg;
 }
