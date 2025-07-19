@@ -311,12 +311,8 @@ export default function OpenAIIconForge() {
         formData.append('prompt', data.prompt);
       }
 
-      const response = await apiRequest('/api/generate-openai-multi-variant-icons', {
-        method: 'POST',
-        body: formData,
-      });
-
-      return response;
+      const response = await apiRequest('POST', '/api/generate-openai-multi-variant-icons', formData);
+      return await response.json();
     },
     onSuccess: (data: OpenAIMultiVariantResponse) => {
       setResults(data);
