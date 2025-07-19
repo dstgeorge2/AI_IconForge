@@ -611,6 +611,14 @@ export default function MultiVariantForge() {
                 >
                   ✨ Creative Style
                 </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="font-mono text-xs bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  onClick={() => window.location.href = '/prompt-builder'}
+                >
+                  🧠 Prompt Builder
+                </Button>
               </div>
             </div>
             <p className="text-lg text-gray-600 font-mono">

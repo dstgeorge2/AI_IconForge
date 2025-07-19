@@ -9,6 +9,7 @@ import { generateOpenAIMultiVariantIcons, generateOpenAIIconsFromText } from "./
 import { generateCreativeMultiVariantIcons, generateCreativeIconsFromText } from "./services/creativeIconGenerator";
 import { generateRevisedIcon } from "./services/iconRevision";
 import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
+import promptGenerationRoutes from "./routes/prompt-generation";
 import multer from "multer";
 import { z } from "zod";
 
@@ -25,6 +26,9 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register prompt generation routes
+  app.use('/api', promptGenerationRoutes);
+  
   // Initialize refinement service
   const refinementService = new IconRefinementService();
   

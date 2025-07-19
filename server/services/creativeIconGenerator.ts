@@ -7,6 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getCreativeStylePrompt, validateCreativeStyle } from './creativeStyleGuide';
 import { ensureValidDownloadableSVG } from './svgOptimizer';
 import { validateWindchillIcon, WindchillIconMetadata } from './windchillIconValidator';
+import { buildCreativeIconPrompt, parseInputToConfig } from './iconPromptBuilder';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy_key",
@@ -64,8 +65,33 @@ async function generateCreativeIconVariant(
     console.log(`🎨 Creative Generation - Starting ${approach} variant...`);
     const startTime = Date.now();
 
-    // Get creative style prompt
-    const creativePrompt = getCreativeStylePrompt(approach);
+    // Try new structured prompt first, fallback to original
+    let creativePrompt: string;
+    try {
+      // Use improved prompt builder if available
+      const config = parseInputToConfig(imageName, 'creative-hand-drawn');
+      config.description = `${config.description} ${additionalPrompt}`.trim();
+      creativePrompt = buildCreativeIconPrompt({
+        name: config.name || imageName,
+        description: config.description,
+        style: config.style || {
+          strokeWeight: 'bold',
+          fill: 'outline',
+          cornerStyle: 'rounded',
+          perspective: 'slight-tilt',
+          gridAlignment: 'optical',
+          shading: 'minimal',
+          decorativeElements: 'sparkles'
+        },
+        dimensions: { canvasSize: 24, padding: 2, liveArea: 20 },
+        doNotInclude: ['text', 'labels', 'background'],
+        output: { format: 'SVG', background: 'transparent', colorMode: 'monochrome' },
+        targetUse: `creative ${approach} icon`
+      });
+    } catch (error) {
+      // Fallback to original prompt system
+      creativePrompt = getCreativeStylePrompt(approach);
+    }
 
     const message = await anthropic.messages.create({
       max_tokens: 2000,

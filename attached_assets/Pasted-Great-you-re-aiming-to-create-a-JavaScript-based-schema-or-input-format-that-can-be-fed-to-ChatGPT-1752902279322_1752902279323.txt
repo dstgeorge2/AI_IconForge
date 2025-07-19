@@ -1,0 +1,129 @@
+Great — you’re aiming to create a JavaScript-based schema or input format that can be fed to ChatGPT (or other image-generation AIs) to generate clear, consistent stock-style icons.
+
+To do that effectively, your JS needs to:
+	1.	Capture icon semantics (what it’s about),
+	2.	Specify visual style rules (e.g. stroke weight, shape language),
+	3.	Include formatting cues (e.g. SVG-friendly, no text),
+	4.	Optionally generate a prompt string that ChatGPT or image generation models can understand and act on clearly.
+
+⸻
+
+✅ Suggested JS Schema for Icon Style Prompts
+
+Here’s a clean, extensible object format:
+
+const iconPrompt = {
+  name: "download", // semantic name
+  description: "An arrow pointing down into a horizontal base", // helps disambiguate meaning
+  style: {
+    strokeWeight: "2dp", // or "bold", "thin"
+    fill: "outline", // or "filled", "duotone"
+    cornerStyle: "rounded", // or "sharp", "mixed"
+    perspective: "flat front", // or "isometric", "slight tilt"
+    gridAlignment: "pixel-perfect",
+    shading: "none",
+    decorativeElements: "none", // or "sparkles", "dots"
+  },
+  dimensions: {
+    canvasSize: 24,
+    padding: 2,
+    liveArea: 20,
+  },
+  doNotInclude: [
+    "text",
+    "labels",
+    "background",
+    "realistic shading",
+    "hand-drawn effects",
+  ],
+  output: {
+    format: "SVG",
+    background: "transparent",
+    colorMode: "monochrome",
+  },
+  targetUse: "stock icon for interface", // optional use-case context
+};
+
+
+⸻
+
+🧠 Then, Convert That to a Prompt String for ChatGPT
+
+A helper function:
+
+function buildIconPrompt(config) {
+  const {
+    name,
+    description,
+    style,
+    dimensions,
+    doNotInclude,
+    output,
+    targetUse,
+  } = config;
+
+  return `
+Draw a stock icon for "${name}". ${description}
+
+Style:
+- Stroke weight: ${style.strokeWeight}
+- Fill: ${style.fill}
+- Corners: ${style.cornerStyle}
+- Perspective: ${style.perspective}
+- Alignment: ${style.gridAlignment}
+- Shading: ${style.shading}
+- Decorations: ${style.decorativeElements}
+
+Canvas:
+- ${dimensions.canvasSize}x${dimensions.canvasSize}px
+- ${dimensions.padding}px padding
+- ${dimensions.liveArea}px live area
+
+Output:
+- Format: ${output.format}
+- Background: ${output.background}
+- Color: ${output.colorMode}
+
+Do not include: ${doNotInclude.join(", ")}
+Target use: ${targetUse}
+`.trim();
+}
+
+✅ Example Output Prompt:
+
+Draw a stock icon for "download". An arrow pointing down into a horizontal base
+
+Style:
+- Stroke weight: 2dp
+- Fill: outline
+- Corners: rounded
+- Perspective: flat front
+- Alignment: pixel-perfect
+- Shading: none
+- Decorations: none
+
+Canvas:
+- 24x24px
+- 2px padding
+- 20px live area
+
+Output:
+- Format: SVG
+- Background: transparent
+- Color: monochrome
+
+Do not include: text, labels, background, realistic shading, hand-drawn effects
+Target use: stock icon for interface
+
+
+⸻
+
+🔁 Future Extensions
+	•	Add rtlAware: true flag
+	•	Support tags for search (e.g. ["arrow", "data", "interface"])
+	•	Add relatedIcons: ["upload", "export"] for semantic clustering
+	•	Support multi-style exports: "styles": ["outlined", "sharp", "rounded"]
+
+⸻
+
+Would you like a working JS module (Node or browser) or a visual UI (e.g. React-based prompt builder)?
