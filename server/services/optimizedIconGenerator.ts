@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { IconVariantResponse, MultiVariantIconResponse } from '../../shared/schema';
-import { optimizeSVG } from './svgOptimizer';
+import { optimizeSVG, ensureValidDownloadableSVG } from './svgOptimizer';
 import { validateSVG } from './svgValidation';
 import { validateIcon } from './iconValidation';
 import { validateIconAtMultipleSizes } from './previewValidator';

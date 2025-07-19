@@ -6,6 +6,7 @@ import IconRefinementService from "./services/iconRefinement";
 import { generateMultiVariantIcons, generateMultiVariantIconsFromText } from "./services/multiVariantIconGenerator";
 import { generateOptimizedMultiVariantIcons } from "./services/optimizedIconGenerator";
 import { generateOpenAIMultiVariantIcons, generateOpenAIIconsFromText } from "./services/openaiIconGenerator";
+import { generateCreativeMultiVariantIcons, generateCreativeIconsFromText } from "./services/creativeIconGenerator";
 import { generateRevisedIcon } from "./services/iconRevision";
 import { insertIconConversionSchema, insertIconVariantSchema } from "@shared/schema";
 import multer from "multer";
@@ -345,6 +346,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('OpenAI multi-variant icon generation error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Creative Multi-variant icon generation
+  app.post('/api/generate-creative-multi-variant-icons', upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      let multiVariantResult;
+      let originalName;
+      
+      if (req.body.textDescription) {
+        // Text description mode
+        const textDescription = req.body.textDescription;
+        originalName = 'creative-text-description.txt';
+        multiVariantResult = await generateCreativeIconsFromText(textDescription);
+      } else {
+        // Image file mode
+        if (!req.file) {
+          return res.status(400).json({ error: 'No image file or text description provided' });
+        }
+        const base64Image = req.file.buffer.toString('base64');
+        originalName = req.file.originalname;
+        const additionalPrompt = req.body.prompt || '';
+        multiVariantResult = await generateCreativeMultiVariantIcons(originalName, base64Image, additionalPrompt);
+      }
+      
+      // Create main conversion record
+      const conversion = await storage.createIconConversion({
+        originalImageName: originalName,
+        svgCode: multiVariantResult.variants['creative-one-to-one'].svg,
+        validationResults: [],
+        metadata: { 
+          approach: 'creative-multi-variant',
+          processingTime: multiVariantResult.processingTime,
+          totalSize: multiVariantResult.totalSize,
+          model: multiVariantResult.model,
+          styleGuide: multiVariantResult.styleGuide,
+          optimized: true
+        }
+      });
+
+      // Store all creative variants
+      const storedVariants = await Promise.all([
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'creative-one-to-one',
+          svgCode: multiVariantResult.variants['creative-one-to-one'].svg,
+          explanation: multiVariantResult.variants['creative-one-to-one'].explanation,
+          confidence: Math.round(multiVariantResult.variants['creative-one-to-one'].confidence),
+          metadata: multiVariantResult.variants['creative-one-to-one'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'creative-ui-intent',
+          svgCode: multiVariantResult.variants['creative-ui-intent'].svg,
+          explanation: multiVariantResult.variants['creative-ui-intent'].explanation,
+          confidence: Math.round(multiVariantResult.variants['creative-ui-intent'].confidence),
+          metadata: multiVariantResult.variants['creative-ui-intent'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'creative-material',
+          svgCode: multiVariantResult.variants['creative-material'].svg,
+          explanation: multiVariantResult.variants['creative-material'].explanation,
+          confidence: Math.round(multiVariantResult.variants['creative-material'].confidence),
+          metadata: multiVariantResult.variants['creative-material'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'creative-carbon',
+          svgCode: multiVariantResult.variants['creative-carbon'].svg,
+          explanation: multiVariantResult.variants['creative-carbon'].explanation,
+          confidence: Math.round(multiVariantResult.variants['creative-carbon'].confidence),
+          metadata: multiVariantResult.variants['creative-carbon'].metadata
+        }),
+        storage.createIconVariant({
+          conversionId: conversion.id,
+          variantType: 'creative-filled',
+          svgCode: multiVariantResult.variants['creative-filled'].svg,
+          explanation: multiVariantResult.variants['creative-filled'].explanation,
+          confidence: Math.round(multiVariantResult.variants['creative-filled'].confidence),
+          metadata: multiVariantResult.variants['creative-filled'].metadata
+        })
+      ]);
+
+      res.json({
+        conversionId: conversion.id,
+        originalImageName: originalName,
+        variants: {
+          'creative-one-to-one': {
+            id: storedVariants[0].id,
+            svg: storedVariants[0].svgCode,
+            explanation: storedVariants[0].explanation,
+            confidence: storedVariants[0].confidence,
+            metadata: storedVariants[0].metadata
+          },
+          'creative-ui-intent': {
+            id: storedVariants[1].id,
+            svg: storedVariants[1].svgCode,
+            explanation: storedVariants[1].explanation,
+            confidence: storedVariants[1].confidence,
+            metadata: storedVariants[1].metadata
+          },
+          'creative-material': {
+            id: storedVariants[2].id,
+            svg: storedVariants[2].svgCode,
+            explanation: storedVariants[2].explanation,
+            confidence: storedVariants[2].confidence,
+            metadata: storedVariants[2].metadata
+          },
+          'creative-carbon': {
+            id: storedVariants[3].id,
+            svg: storedVariants[3].svgCode,
+            explanation: storedVariants[3].explanation,
+            confidence: storedVariants[3].confidence,
+            metadata: storedVariants[3].metadata
+          },
+          'creative-filled': {
+            id: storedVariants[4].id,
+            svg: storedVariants[4].svgCode,
+            explanation: storedVariants[4].explanation,
+            confidence: storedVariants[4].confidence,
+            metadata: storedVariants[4].metadata
+          }
+        },
+        processingTime: multiVariantResult.processingTime,
+        totalSize: multiVariantResult.totalSize,
+        model: multiVariantResult.model,
+        styleGuide: multiVariantResult.styleGuide
+      });
+    } catch (error) {
+      console.error('Creative multi-variant icon generation error:', error);
       res.status(500).json({ error: (error as Error).message });
     }
   });

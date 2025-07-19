@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Blend, Target, Palette, Cpu, Square, ChevronDown, ChevronUp, Grid3x3, Zap } from 'lucide-react';
+import { Upload, Download, Copy, Check, Loader2, Image, FileText, Layers, Sparkles, Target, Palette, Cpu, Square, ChevronDown, ChevronUp, Grid3x3, Zap, Paintbrush } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
-interface OpenAIVariant {
+interface CreativeVariant {
   id: number;
   svg: string;
   explanation: string;
@@ -23,6 +23,12 @@ interface OpenAIVariant {
     size: string;
     optimized: boolean;
     model: string;
+    creativeStyle: {
+      isometric: boolean;
+      handDrawn: boolean;
+      decorativeElements: string[];
+      personality: string;
+    };
     windchillCompliance?: {
       score: number;
       valid: boolean;
@@ -32,35 +38,40 @@ interface OpenAIVariant {
   };
 }
 
-interface OpenAIMultiVariantResponse {
+interface CreativeMultiVariantResponse {
   conversionId: number;
   originalImageName: string;
   variants: {
-    'one-to-one': OpenAIVariant;
-    'ui-intent': OpenAIVariant;
-    'material': OpenAIVariant;
-    'carbon': OpenAIVariant;
-    'filled': OpenAIVariant;
+    'creative-one-to-one': CreativeVariant;
+    'creative-ui-intent': CreativeVariant;
+    'creative-material': CreativeVariant;
+    'creative-carbon': CreativeVariant;
+    'creative-filled': CreativeVariant;
   };
   processingTime: number;
   totalSize: string;
   model: string;
+  styleGuide: string;
 }
 
-interface VariantDisplayProps {
-  variant: OpenAIVariant;
+interface CreativeVariantDisplayProps {
+  variant: CreativeVariant;
   variantType: string;
   fileName: string;
   revisionExpanded: {[key: string]: boolean};
   setRevisionExpanded: React.Dispatch<React.SetStateAction<{[key: string]: boolean}>>;
   selectedFile?: File | null;
-  revisionMutation?: any;
 }
 
-const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantType, fileName, revisionExpanded, setRevisionExpanded, selectedFile, revisionMutation }) => {
+const CreativeVariantDisplay: React.FC<CreativeVariantDisplayProps> = ({ 
+  variant, 
+  variantType, 
+  fileName, 
+  revisionExpanded, 
+  setRevisionExpanded, 
+  selectedFile 
+}) => {
   const [copied, setCopied] = useState(false);
-  const [referenceFile, setReferenceFile] = useState<File | null>(null);
-  const [customPrompt, setCustomPrompt] = useState('');
   const { toast } = useToast();
 
   const handleCopy = async () => {
@@ -87,18 +98,41 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${fileName.split('.')[0]}_${variantType}_openai.svg`;
+    a.download = `${fileName.split('.')[0]}_${variantType}_creative.svg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  // Windchill Compliance Badge Component
+  // Creative Style Badge Component
+  const CreativeStyleBadge = ({ style }: { style: any }) => (
+    <div className="flex flex-wrap gap-1">
+      {style.isometric && (
+        <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+          <Sparkles className="w-3 h-3 mr-1" />
+          Isometric
+        </Badge>
+      )}
+      {style.handDrawn && (
+        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+          <Paintbrush className="w-3 h-3 mr-1" />
+          Hand-drawn
+        </Badge>
+      )}
+      {style.decorativeElements.length > 0 && (
+        <Badge variant="outline" className="text-xs bg-pink-50 text-pink-700 border-pink-200">
+          ✨ {style.decorativeElements.join(', ')}
+        </Badge>
+      )}
+    </div>
+  );
+
+  // Windchill Compliance Badge
   const ComplianceBadge = ({ score, isValid }: { score: number; isValid: boolean }) => (
     <Badge 
       variant={isValid ? 'default' : 'destructive'}
-      className="text-xs font-mono"
+      className="text-xs font-mono bg-gradient-to-r from-purple-500 to-pink-500 text-white"
     >
       <Zap className="w-3 h-3 mr-1" />
       Windchill {score}%
@@ -107,44 +141,44 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
 
   const getVariantIcon = (type: string) => {
     switch (type) {
-      case 'one-to-one': return <Image className="w-4 h-4" />;
-      case 'ui-intent': return <Target className="w-4 h-4" />;
-      case 'material': return <Palette className="w-4 h-4" />;
-      case 'carbon': return <Cpu className="w-4 h-4" />;
-      case 'filled': return <Square className="w-4 h-4" />;
-      default: return <Layers className="w-4 h-4" />;
+      case 'creative-one-to-one': return <Image className="w-4 h-4" />;
+      case 'creative-ui-intent': return <Target className="w-4 h-4" />;
+      case 'creative-material': return <Palette className="w-4 h-4" />;
+      case 'creative-carbon': return <Cpu className="w-4 h-4" />;
+      case 'creative-filled': return <Square className="w-4 h-4" />;
+      default: return <Sparkles className="w-4 h-4" />;
     }
   };
 
   const getVariantLabel = (type: string) => {
     switch (type) {
-      case 'one-to-one': return '1:1 Icon';
-      case 'ui-intent': return 'UI Intent';
-      case 'material': return 'Material';
-      case 'carbon': return 'Carbon';
-      case 'filled': return 'Filled';
-      default: return 'Unknown';
+      case 'creative-one-to-one': return 'Creative 1:1';
+      case 'creative-ui-intent': return 'Creative Intent';
+      case 'creative-material': return 'Creative Material';
+      case 'creative-carbon': return 'Creative Carbon';
+      case 'creative-filled': return 'Creative Filled';
+      default: return 'Creative Unknown';
     }
   };
 
   const getVariantDescription = (type: string) => {
     switch (type) {
-      case 'one-to-one': return 'OpenAI vision reconstruction';
-      case 'ui-intent': return 'GPT-4o semantic analysis';
-      case 'material': return 'Material Design + OpenAI';
-      case 'carbon': return 'IBM Carbon + OpenAI';
-      case 'filled': return 'High contrast filled style';
-      default: return 'OpenAI generated';
+      case 'creative-one-to-one': return 'Hand-drawn recreation with isometric tilt';
+      case 'creative-ui-intent': return 'Playful semantic interpretation';
+      case 'creative-material': return 'Material Design with organic personality';
+      case 'creative-carbon': return 'IBM Carbon with creative energy';
+      case 'creative-filled': return 'Bold filled style with sparkles';
+      default: return 'Creative style';
     }
   };
 
   return (
-    <div key={`openai-${variantType}-${variant.id}-${variant.metadata?.revised ? 'revised' : 'original'}`} className="space-y-4">
+    <div key={`creative-${variantType}-${variant.id}-${variant.metadata?.revised ? 'revised' : 'original'}`} className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {getVariantIcon(variantType)}
           <h3 className="font-mono text-sm font-medium">{getVariantLabel(variantType)}</h3>
-          <Badge variant="outline" className="text-xs font-mono">
+          <Badge variant="outline" className="text-xs font-mono bg-purple-50 text-purple-700">
             {variant.metadata.model}
           </Badge>
         </div>
@@ -163,23 +197,23 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
       
       <Progress value={variant.confidence} className="h-1" />
       
-      <Card className="border-2 border-blue-500 bg-white">
+      <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50">
         <CardContent className="p-4">
           {/* Multi-size preview */}
           <div className="mb-4 space-y-2">
             <div className="flex items-center gap-2 text-xs font-mono text-gray-600">
-              <span>OpenAI GPT-4o Preview:</span>
+              <span>Creative Style Preview:</span>
               <span className="text-gray-400">16dp • 20dp • 24dp • 32dp • 48dp</span>
             </div>
-            <div className="flex items-center gap-4 p-3 bg-blue-50 border-2 border-blue-500 rounded">
+            <div className="flex items-center gap-4 p-3 bg-white border-2 border-purple-500 rounded shadow-sm">
               {[16, 20, 24, 32, 48].map(size => (
                 <div key={size} className="flex flex-col items-center gap-1">
                   <div 
-                    className="border border-blue-300 bg-white flex items-center justify-center"
+                    className="border border-purple-300 bg-white flex items-center justify-center shadow-sm"
                     style={{ width: size + 4, height: size + 4 }}
                   >
                     <div 
-                      key={`openai-${variantType}-${variant.id}-${size}`}
+                      key={`creative-${variantType}-${variant.id}-${size}`}
                       style={{ 
                         width: size, 
                         height: size,
@@ -207,6 +241,15 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
                   <span className="text-xs font-mono text-gray-500">{size}dp</span>
                 </div>
               ))}
+            </div>
+          </div>
+          
+          {/* Creative Style Information */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-purple-100 to-pink-100 border rounded">
+            <div className="text-xs font-mono text-purple-700 mb-2">Creative Style Features:</div>
+            <CreativeStyleBadge style={variant.metadata.creativeStyle} />
+            <div className="text-xs text-purple-600 mt-2">
+              Personality: {variant.metadata.creativeStyle.personality}
             </div>
           </div>
           
@@ -242,7 +285,7 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
               onClick={handleCopy}
               size="sm"
               variant="outline"
-              className="flex-1 font-mono"
+              className="flex-1 font-mono border-purple-300 text-purple-600 hover:bg-purple-50"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy SVG'}
@@ -252,7 +295,7 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
               onClick={handleDownload}
               size="sm"
               variant="default"
-              className="flex-1 font-mono bg-blue-600 hover:bg-blue-700"
+              className="flex-1 font-mono bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               <Download className="w-4 h-4" />
               Download
@@ -264,12 +307,12 @@ const OpenAIVariantDisplay: React.FC<VariantDisplayProps> = ({ variant, variantT
   );
 };
 
-export default function OpenAIIconForge() {
+export default function CreativeIconForge() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [textDescription, setTextDescription] = useState('');
   const [isTextMode, setIsTextMode] = useState(false);
   const [additionalPrompt, setAdditionalPrompt] = useState('');
-  const [results, setResults] = useState<OpenAIMultiVariantResponse | null>(null);
+  const [results, setResults] = useState<CreativeMultiVariantResponse | null>(null);
   const [revisionExpanded, setRevisionExpanded] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
@@ -282,7 +325,7 @@ export default function OpenAIIconForge() {
       if (acceptedFiles.length > 0) {
         setSelectedFile(acceptedFiles[0]);
         setIsTextMode(false);
-        toast({ title: 'Image selected for OpenAI processing' });
+        toast({ title: 'Image selected for creative processing' });
       }
     },
     onDropRejected: (rejectedFiles) => {
@@ -301,30 +344,30 @@ export default function OpenAIIconForge() {
       
       if (data.textDescription) {
         formData.append('textDescription', data.textDescription);
-        formData.append('engine', 'openai');
+        formData.append('engine', 'creative');
       } else if (data.image) {
         formData.append('image', data.image);
-        formData.append('engine', 'openai');
+        formData.append('engine', 'creative');
       }
       
       if (data.prompt) {
         formData.append('prompt', data.prompt);
       }
 
-      const response = await apiRequest('POST', '/api/generate-openai-multi-variant-icons', formData);
+      const response = await apiRequest('POST', '/api/generate-creative-multi-variant-icons', formData);
       return await response.json();
     },
-    onSuccess: (data: OpenAIMultiVariantResponse) => {
+    onSuccess: (data: CreativeMultiVariantResponse) => {
       setResults(data);
       toast({ 
-        title: 'OpenAI generation complete!', 
-        description: `Generated 5 variants in ${(data.processingTime / 1000).toFixed(1)}s using ${data.model}` 
+        title: 'Creative generation complete!', 
+        description: `Generated 5 creative variants in ${(data.processingTime / 1000).toFixed(1)}s` 
       });
     },
     onError: (error: any) => {
-      console.error('OpenAI generation error:', error);
+      console.error('Creative generation error:', error);
       toast({ 
-        title: 'OpenAI generation failed', 
+        title: 'Creative generation failed', 
         description: error.message || 'Unknown error occurred',
         variant: 'destructive' 
       });
@@ -363,16 +406,16 @@ export default function OpenAIIconForge() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
-            <div className="p-3 bg-blue-600 rounded-xl">
-              <Zap className="w-8 h-8 text-white" />
+            <div className="p-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl">
+              <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold font-mono bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              OpenAI Icon Forge
+            <h1 className="text-4xl font-bold font-mono bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
+              Creative Icon Forge
             </h1>
             <div className="flex gap-2">
               <Button 
@@ -381,54 +424,59 @@ export default function OpenAIIconForge() {
                 className="font-mono text-xs"
                 onClick={() => window.location.href = '/'}
               >
-                ← Claude 4.0 Sonnet
+                ← Standard Windchill
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="font-mono text-xs bg-purple-50 text-purple-600 hover:bg-purple-100"
-                onClick={() => window.location.href = '/creative'}
+                className="font-mono text-xs"
+                onClick={() => window.location.href = '/openai'}
               >
-                ✨ Creative Style
+                OpenAI Version →
               </Button>
             </div>
           </div>
           <p className="text-lg text-gray-600 font-mono">
-            AI-Powered icon generation using OpenAI GPT-4o with Windchill compliance validation
+            Generate playful, hand-drawn isometric icons with creative personality and organic charm
           </p>
-          <Badge variant="outline" className="font-mono">
-            Powered by GPT-4o Vision • Enhanced for Enterprise
-          </Badge>
+          <div className="flex items-center justify-center gap-4">
+            <Badge variant="outline" className="font-mono bg-purple-50 text-purple-700">
+              Powered by Claude 4.0 Sonnet • Creative Style Guide
+            </Badge>
+            <Badge variant="outline" className="font-mono bg-pink-50 text-pink-700">
+              Isometric Tilt • Hand-drawn • Sparkles
+            </Badge>
+          </div>
         </div>
 
         {/* Input Section */}
-        <Card className="border-2 border-blue-500 bg-white/80 backdrop-blur">
+        <Card className="border-2 border-purple-500 bg-white/80 backdrop-blur">
           <CardHeader>
             <CardTitle className="font-mono flex items-center gap-2">
               <Upload className="w-5 h-5" />
-              Input Selection
+              Creative Input Selection
             </CardTitle>
             <CardDescription className="font-mono">
-              Upload an image or describe your icon using OpenAI's advanced vision capabilities
+              Upload an image or describe your icon to generate creative hand-drawn variations with playful personality
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Mode Toggle */}
-            <div className="flex items-center justify-center gap-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+            <div className="flex items-center justify-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
               <div className="flex items-center gap-2">
                 <Image className="w-4 h-4" />
-                <span className={`font-mono text-sm ${!isTextMode ? 'font-bold text-blue-600' : 'text-gray-600'}`}>
+                <span className={`font-mono text-sm ${!isTextMode ? 'font-bold text-purple-600' : 'text-gray-600'}`}>
                   Image Mode
                 </span>
               </div>
               <Switch
                 checked={isTextMode}
                 onCheckedChange={setIsTextMode}
-                className="data-[state=checked]:bg-blue-600"
+                className="data-[state=checked]:bg-purple-600"
               />
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
-                <span className={`font-mono text-sm ${isTextMode ? 'font-bold text-blue-600' : 'text-gray-600'}`}>
+                <span className={`font-mono text-sm ${isTextMode ? 'font-bold text-purple-600' : 'text-gray-600'}`}>
                   Text Mode
                 </span>
               </div>
@@ -441,17 +489,17 @@ export default function OpenAIIconForge() {
                   {...getRootProps()}
                   className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
                     isDragActive 
-                      ? 'border-blue-400 bg-blue-50' 
+                      ? 'border-purple-400 bg-purple-50' 
                       : selectedFile
                       ? 'border-green-400 bg-green-50'
-                      : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                      : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50'
                   }`}
                 >
                   <input {...getInputProps()} />
                   <div className="space-y-3">
                     <div className="flex justify-center">
-                      <div className="p-4 bg-blue-100 rounded-full">
-                        <Upload className="w-8 h-8 text-blue-600" />
+                      <div className="p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full">
+                        <Upload className="w-8 h-8 text-purple-600" />
                       </div>
                     </div>
                     {selectedFile ? (
@@ -460,7 +508,7 @@ export default function OpenAIIconForge() {
                           ✓ {selectedFile.name}
                         </p>
                         <p className="text-sm text-gray-600 font-mono">
-                          Ready for OpenAI GPT-4o processing • {(selectedFile.size / 1024 / 1024).toFixed(2)}MB
+                          Ready for creative processing • {(selectedFile.size / 1024 / 1024).toFixed(2)}MB
                         </p>
                       </div>
                     ) : (
@@ -482,13 +530,13 @@ export default function OpenAIIconForge() {
             {isTextMode && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium font-mono text-gray-700">
-                  Describe your icon
+                  Describe your creative icon
                 </label>
                 <textarea
                   value={textDescription}
                   onChange={(e) => setTextDescription(e.target.value)}
-                  placeholder="E.g., Shopping cart for e-commerce, Settings gear icon, User profile avatar..."
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg font-mono text-sm min-h-24 resize-y focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="E.g., Playful shopping cart with sparkles, Creative settings gear with organic curves, Hand-drawn user avatar with personality..."
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg font-mono text-sm min-h-24 resize-y focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   maxLength={500}
                 />
                 <div className="text-xs text-gray-500 font-mono text-right">
@@ -500,13 +548,13 @@ export default function OpenAIIconForge() {
             {/* Additional Prompt */}
             <div className="space-y-2">
               <label className="block text-sm font-medium font-mono text-gray-700">
-                Additional context (optional)
+                Creative enhancements (optional)
               </label>
               <textarea
                 value={additionalPrompt}
                 onChange={(e) => setAdditionalPrompt(e.target.value)}
-                placeholder="Any specific requirements, style preferences, or context..."
-                className="w-full p-3 border-2 border-gray-300 rounded-lg font-mono text-sm min-h-16 resize-y focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Add more sparkles, make it more isometric, emphasize hand-drawn style, add organic curves..."
+                className="w-full p-3 border-2 border-gray-300 rounded-lg font-mono text-sm min-h-16 resize-y focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 maxLength={200}
               />
             </div>
@@ -516,17 +564,17 @@ export default function OpenAIIconForge() {
               <Button
                 onClick={handleGenerate}
                 disabled={generateMutation.isPending || (!selectedFile && !textDescription.trim())}
-                className="flex-1 font-mono bg-blue-600 hover:bg-blue-700 h-12"
+                className="flex-1 font-mono bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 h-12"
               >
                 {generateMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating with OpenAI...
+                    Generating creative icons...
                   </>
                 ) : (
                   <>
-                    <Zap className="w-4 h-4 mr-2" />
-                    Generate 5 OpenAI Variants
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate 5 Creative Variants
                   </>
                 )}
               </Button>
@@ -534,7 +582,7 @@ export default function OpenAIIconForge() {
               <Button
                 onClick={clearAll}
                 variant="outline"
-                className="font-mono border-blue-300 text-blue-600 hover:bg-blue-50"
+                className="font-mono border-purple-300 text-purple-600 hover:bg-purple-50"
               >
                 Clear All
               </Button>
@@ -545,14 +593,14 @@ export default function OpenAIIconForge() {
         {/* Results Section */}
         {results && (
           <div className="space-y-6">
-            <Card className="border-2 border-blue-500 bg-white/80 backdrop-blur">
+            <Card className="border-2 border-purple-500 bg-white/80 backdrop-blur">
               <CardHeader>
                 <CardTitle className="font-mono flex items-center gap-2">
-                  <Layers className="w-5 h-5" />
-                  OpenAI Generation Results
+                  <Sparkles className="w-5 h-5" />
+                  Creative Generation Results
                 </CardTitle>
                 <CardDescription className="font-mono flex items-center justify-between">
-                  <span>5 variants generated using {results.model}</span>
+                  <span>5 creative variants generated using {results.model}</span>
                   <div className="flex items-center gap-4">
                     <Badge variant="secondary" className="font-mono">
                       {(results.processingTime / 1000).toFixed(1)}s
@@ -560,34 +608,37 @@ export default function OpenAIIconForge() {
                     <Badge variant="secondary" className="font-mono">
                       {results.totalSize} total
                     </Badge>
+                    <Badge variant="outline" className="font-mono bg-purple-50 text-purple-700">
+                      {results.styleGuide}
+                    </Badge>
                   </div>
                 </CardDescription>
               </CardHeader>
             </Card>
 
             {/* Variant Displays */}
-            <Tabs defaultValue="one-to-one" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5 bg-blue-100 border-2 border-blue-500">
-                <TabsTrigger value="one-to-one" className="font-mono data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  1:1 Icon
+            <Tabs defaultValue="creative-one-to-one" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-500">
+                <TabsTrigger value="creative-one-to-one" className="font-mono data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  Creative 1:1
                 </TabsTrigger>
-                <TabsTrigger value="ui-intent" className="font-mono data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  UI Intent
+                <TabsTrigger value="creative-ui-intent" className="font-mono data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  Creative Intent
                 </TabsTrigger>
-                <TabsTrigger value="material" className="font-mono data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  Material
+                <TabsTrigger value="creative-material" className="font-mono data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  Creative Material
                 </TabsTrigger>
-                <TabsTrigger value="carbon" className="font-mono data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  Carbon
+                <TabsTrigger value="creative-carbon" className="font-mono data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  Creative Carbon
                 </TabsTrigger>
-                <TabsTrigger value="filled" className="font-mono data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  Filled
+                <TabsTrigger value="creative-filled" className="font-mono data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                  Creative Filled
                 </TabsTrigger>
               </TabsList>
 
               {Object.entries(results.variants).map(([variantType, variant]) => (
                 <TabsContent key={variantType} value={variantType} className="space-y-4">
-                  <OpenAIVariantDisplay
+                  <CreativeVariantDisplay
                     variant={variant}
                     variantType={variantType}
                     fileName={results.originalImageName}

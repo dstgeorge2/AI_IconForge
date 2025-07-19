@@ -603,6 +603,14 @@ export default function MultiVariantForge() {
                 >
                   Try OpenAI GPT-4o →
                 </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="font-mono text-xs bg-purple-50 text-purple-600 hover:bg-purple-100"
+                  onClick={() => window.location.href = '/creative'}
+                >
+                  ✨ Creative Style
+                </Button>
               </div>
             </div>
             <p className="text-lg text-gray-600 font-mono">
