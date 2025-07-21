@@ -56,20 +56,20 @@ export class SVGFormatter {
     const contentMatch = svg.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
     const content = contentMatch ? contentMatch[1] : '';
     
-    // Build proper SVG with Windchill-compliant attributes
-    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
+    // Build proper SVG with clean, working attributes
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
   }
 
   /**
-   * Apply Windchill-specific formatting requirements
+   * Apply clean, working formatting requirements
    */
   private static applyWindchillFormatting(svg: string): string {
     return svg
-      // Ensure square stroke endings (Windchill requirement)
-      .replace(/stroke-linecap="round"/g, 'stroke-linecap="square"')
-      .replace(/stroke-linejoin="round"/g, 'stroke-linejoin="miter"')
-      // Ensure consistent stroke width
+      // Ensure consistent stroke settings that actually work
       .replace(/stroke-width="[^"]*"/g, 'stroke-width="2"')
+      // Ensure proper stroke caps for readability
+      .replace(/stroke-linecap="[^"]*"/g, 'stroke-linecap="round"')
+      .replace(/stroke-linejoin="[^"]*"/g, 'stroke-linejoin="round"')
       // Clean up any duplicate attributes
       .replace(/(\w+="[^"]*")\s+\1/g, '$1');
   }
@@ -122,7 +122,7 @@ export class SVGFormatter {
    * Generate fallback SVG when input is invalid
    */
   private static generateFallbackSVG(): string {
-    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" xmlns="http://www.w3.org/2000/svg">
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
   <rect x="3" y="3" width="18" height="18" rx="2"/>
   <path d="M9 9l6 6M15 9l-6 6"/>
 </svg>`;
@@ -150,7 +150,7 @@ export function createWindchillCompliantSVG(content: string): string {
   const allElements = [...pathsMatch, ...rectsMatch, ...circlesMatch, ...linesMatch];
   const cleanContent = allElements.join('\n  ');
   
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
   ${cleanContent}
 </svg>`;
 }
