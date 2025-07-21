@@ -6,6 +6,7 @@ import { validateIcon } from './iconValidation';
 import { validateIconAtMultipleSizes } from './previewValidator';
 import { generateIntelligentPrompt } from './intelligentPrompting';
 import { validateWindchillIcon, WindchillIconMetadata } from './windchillIconValidator';
+import { formatSVGForDownload } from './svgFormatter';
 
 /*
 <important_code_snippet_instructions>
@@ -91,7 +92,7 @@ async function generateOptimizedVariant(
       ]
     });
 
-    const result = parseIconResponse(response.content[0].text);
+    const result = parseIconResponse(response.content[0].type === 'text' ? response.content[0].text : '');
     
     // Validate and optimize SVG
     const svgValidation = await validateSVG(result.svg);
@@ -112,12 +113,12 @@ async function generateOptimizedVariant(
     };
     const windchillValidation = validateWindchillIcon(optimizedSVG.svg, windchillMetadata);
     
-    // Use best available SVG
-    const finalSVG = svgValidation.isValid ? optimizedSVG.svg : generateCleanFallback();
+    // Format SVG properly for download
+    const finalSVG = svgValidation.isValid ? formatSVGForDownload(optimizedSVG.svg) : formatSVGForDownload(generateCleanFallback());
     
     // Calculate confidence
     const baseConfidence = 85;
-    const adjustedConfidence = Math.min(baseConfidence, validation.overallScore, svgValidation.confidence);
+    const adjustedConfidence = Math.min(baseConfidence, validation.score, svgValidation.confidence);
 
     return {
       svg: finalSVG,
@@ -225,6 +226,19 @@ export async function generateOptimizedMultiVariantIcons(
     processingTime,
     totalSize
   };
+}
+
+/**
+ * Get media type from filename
+ */
+function getMediaType(fileName: string): "image/jpeg" | "image/png" | "image/gif" | "image/webp" {
+  const ext = fileName.toLowerCase().split('.').pop();
+  switch (ext) {
+    case 'png': return 'image/png';
+    case 'gif': return 'image/gif';
+    case 'webp': return 'image/webp';
+    default: return 'image/jpeg';
+  }
 }
 
 /**
@@ -395,16 +409,6 @@ Generate a high-contrast filled icon optimized for enterprise workflows.
 /**
  * Helper functions
  */
-function getMediaType(fileName: string): string {
-  const ext = fileName.toLowerCase().split('.').pop();
-  switch (ext) {
-    case 'png': return 'image/png';
-    case 'jpg': case 'jpeg': return 'image/jpeg';
-    case 'gif': return 'image/gif';
-    case 'webp': return 'image/webp';
-    default: return 'image/jpeg';
-  }
-}
 
 function parseIconResponse(responseText: string): { svg: string; explanation: string } {
   let cleanText = responseText;
@@ -430,10 +434,10 @@ function parseIconResponse(responseText: string): { svg: string; explanation: st
 }
 
 function generateCleanFallback(): string {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2"/>
-    <path d="M9 9l6 6M15 9l-6 6"/>
-  </svg>`;
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" xmlns="http://www.w3.org/2000/svg">
+  <rect x="3" y="3" width="18" height="18" rx="2"/>
+  <path d="M9 9l6 6M15 9l-6 6"/>
+</svg>`;
 }
 
 function calculateTotalSize(variants: CleanVariantResponse[]): string {
