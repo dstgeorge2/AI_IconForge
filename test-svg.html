@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .svg-container { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        svg { width: 48px; height: 48px; margin: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h2>SVG Rendering Test</h2>
+    
+    <div class="svg-container">
+        <h3>Working Icon (Expected)</h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9l6 6M15 9l-6 6"/>
+        </svg>
+    </div>
+
+    <div class="svg-container">
+        <h3>Problematic (Box-like)</h3>
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 9l6 6M15 9l-6 6"/>
+        </svg>
+    </div>
+
+    <div class="svg-container">
+        <h3>Debug: Fill vs Stroke</h3>
+        <p>Fill="currentColor" creates solid blocks</p>
+        <p>Fill="none" with stroke="currentColor" creates line art</p>
+    </div>
+</body>
+</html>

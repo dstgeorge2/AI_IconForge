@@ -256,7 +256,9 @@ Analyze the image and recreate it as a clean UI icon following PTC Windchill des
 
 ## WINDCHILL STYLE REQUIREMENTS
 - 24x24dp canvas, 20x20dp live area, 2dp padding
-- 2dp black stroke weight, square stroke endings
+- IMPORTANT: Use fill="none" stroke="currentColor" stroke-width="2"
+- Generate line art icons, NOT filled shapes
+- 2dp stroke weight with round caps (stroke-linecap="round")
 - Orthographic perspective (flat, no 3D/isometric)
 - Pixel-snapped geometry, no subpixel rendering
 - Single recognizable metaphor
@@ -297,8 +299,10 @@ Combine image analysis with filename semantics to create an icon for complex ent
 - Industrial tone: avoid playful or decorative elements
 
 ## TECHNICAL CONSTRAINTS
-- 24x24dp canvas, 20x20dp live area, 2dp stroke
-- Square stroke endings, no rounded caps
+- 24x24dp canvas, 20x20dp live area
+- CRITICAL: Use fill="none" stroke="currentColor" stroke-width="2" 
+- Generate stroke-based line icons, NOT solid shapes
+- Round stroke caps (stroke-linecap="round" stroke-linejoin="round")
 - Orthographic perspective only
 - No gradients, shadows, or 3D effects
 - Maximum 2 metaphors for composite icons
@@ -313,6 +317,9 @@ function generateMaterialPrompt(intelligentPrompt: any): string {
 Create an icon following Google Material Design specifications adapted for Windchill enterprise use.
 
 ## MATERIAL PRINCIPLES ADAPTED FOR WINDCHILL
+- Use stroke-based line art with fill="none" stroke="currentColor"
+- Stroke width: 2dp with round caps (stroke-linecap="round")
+- Generate line icons, NOT filled shapes unless specifically requested
 - Variable Font Attributes: Weight 400, Fill 0, Grade 0, Optical Size 24dp
 - Keyline shapes with enterprise precision
 - Outlined style (fill=0) for base state
@@ -345,7 +352,9 @@ function generateCarbonPrompt(intelligentPrompt: any): string {
 Create an icon following IBM Carbon Design system specifications enhanced for Windchill enterprise complexity.
 
 ## CARBON PRINCIPLES FOR WINDCHILL
-- 2dp stroke weight with sharp, precise lines
+- IMPORTANT: Use fill="none" stroke="currentColor" stroke-width="2"
+- Generate line art icons with 2dp stroke weight and precise lines
+- Use stroke-linecap="round" stroke-linejoin="round" for clean appearance
 - Consistent visual language and enterprise grid system
 - Geometric precision suitable for technical workflows
 - Minimal, functional approach that supports complex operations
@@ -364,7 +373,9 @@ Create an icon following IBM Carbon Design system specifications enhanced for Wi
 
 ## CONSTRAINTS
 - 24x24dp canvas, 20x20dp live area
-- 2dp stroke weight, square caps and miter joins
+- CRITICAL: Use fill="none" stroke="currentColor" stroke-width="2"
+- Round stroke caps (stroke-linecap="round" stroke-linejoin="round")
+- Generate line art icons, NOT filled/solid shapes
 - Pixel-perfect alignment for technical precision
 - No decorative elements, purely functional
 
@@ -397,10 +408,10 @@ Create a high-contrast filled icon for Windchill enterprise interfaces with soli
 
 ## CONSTRAINTS
 - 24x24dp canvas, 20x20dp live area
-- Use fill="currentColor" for solid shapes
-- Minimal stroke usage, focus on filled forms
-- Square corners and precise edges
-- No gradients or decorative fills
+- Use fill="currentColor" ONLY for filled variant icons
+- Primary style should be stroke-based line art with fill="none"
+- Use stroke="currentColor" with stroke-width="2"
+- Clean, readable lines with proper stroke caps
 
 Generate a high-contrast filled icon optimized for enterprise workflows.
 `;
