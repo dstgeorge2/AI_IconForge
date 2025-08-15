@@ -85,8 +85,8 @@ export class SVGFormatter {
       .replace(/\s{2,}/g, ' ')
       // Clean up spaces around attributes
       .replace(/\s*=\s*/g, '=')
-      // Ensure single space between attributes
-      .replace(/"\s*([a-zA-Z])/g, '" $1')
+      // Ensure single space between attributes (without touching attribute values)
+      .replace(/"\s*(?=[a-zA-Z]+=)/g, '" ')
       // Clean up the opening tag spacing
       .replace(/<svg\s+/g, '<svg ')
       .trim();
